@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>家庭贴心管家</title>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ===== Reset & Base ===== */
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:#FFF9F0;
+  color:#333;
+  min-height:100vh;
+}
+
+/* ===== Top Nav ===== */
+.top-nav{
+  position:sticky;top:0;z-index:100;
+  background:linear-gradient(135deg,#FF9A76 0%,#FECDA6 100%);
+  padding:16px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 12px rgba(0,0,0,.1);
+}
+.top-nav h1{font-size:22px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.15);letter-spacing:1px}
+.top-nav .date{font-size:14px;color:rgba(255,255,255,.9);background:rgba(255,255,255,.25);padding:4px 12px;border-radius:20px}
+
+/* ===== Tabs ===== */
+.tabs{
+  display:flex;justify-content:center;gap:12px;
+  padding:20px 24px 8px;
+}
+.tab-btn{
+  padding:10px 32px;border-radius:24px;border:none;
+  font-size:15px;font-weight:600;cursor:pointer;
+  transition:all .3s;
+  background:#fff;color:#999;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+.tab-btn.active{
+  background:linear-gradient(135deg,#FF9A76,#FECDA6);
+  color:#fff;
+  box-shadow:0 4px 14px rgba(255,154,118,.35);
+  transform:translateY(-1px);
+}
+.tab-btn:hover:not(.active){color:#FF9A76;background:#FFF5EE}
+
+/* ===== Three-Column Layout ===== */
+.main-layout{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:20px;
+  padding:20px 24px;
+  max-width:1600px;
+  margin:0 auto;
+  align-items:stretch;
+}
+.col-left,.col-mid,.col-right{
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+  min-width:0;
+}
+.col-left>.member-card,
+.col-right>.ai-card{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+.col-left>.member-card>.task-list{
+  flex:1;
+}
+.ai-card-body{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  padding:20px;
+  background:linear-gradient(180deg,#FFFDF5,#FFF9E6);
+}
+.ai-card-body .ai-text{
+  flex:1;
+}
+
+/* ===== Member Card ===== */
+.member-card{
+  background:#fff;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,.06);
+  transition:all .35s cubic-bezier(.4,0,.2,1);
+  animation:cardIn .45s ease both;
+}
+.member-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 8px 30px rgba(0,0,0,.1);
+}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.card-header{
+  padding:16px 20px;
+  display:flex;align-items:center;gap:12px;
+  color:#fff;
+  position:relative;
+  overflow:hidden;
+}
+.card-header::after{
+  content:'';position:absolute;top:-50%;right:-20%;
+  width:100px;height:100px;
+  background:rgba(255,255,255,.12);
+  border-radius:50%;
+}
+.avatar{
+  width:48px;height:48px;
+  background:rgba(255,255,255,.25);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);
+  flex-shrink:0;
+}
+.card-header .name{font-size:18px;font-weight:700;letter-spacing:.5px}
+.card-header .progress-text{
+  margin-left:auto;
+  font-size:13px;
+  opacity:.9;
+  z-index:1;
+}
+
+/* ===== Progress Bar ===== */
+.progress-bar-wrap{
+  height:4px;background:rgba(0,0,0,.06);
+}
+.progress-bar-fill{
+  height:100%;
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+  border-radius:0 2px 2px 0;
+}
+
+/* ===== Task List ===== */
+.task-list{
+  padding:12px 16px 16px;
+  min-height:60px;
+}
+.task-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;
+  border-radius:12px;
+  margin-bottom:8px;
+  transition:all .3s;
+  background:#FAFAFA;
+  animation:taskIn .3s ease both;
+}
+.task-item:hover{background:#FFF5EE}
+@keyframes taskIn{
+  from{opacity:0;transform:translateX(-10px)}
+  to{opacity:1;transform:translateX(0)}
+}
+
+.task-item.done{opacity:.5}
+.task-item.done .task-title{text-decoration:line-through;color:#bbb}
+
+/* Checkbox */
+.task-check{
+  width:22px;height:22px;
+  border-radius:6px;
+  border:2px solid #ddd;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .25s;
+  flex-shrink:0;
+  background:#fff;
+}
+.task-check:hover{border-color:#FF9A76}
+.task-check.checked{
+  background:linear-gradient(135deg,#67C23A,#95D475);
+  border-color:#67C23A;
+}
+.task-check.checked::after{
+  content:'✓';color:#fff;font-size:13px;font-weight:700;
+}
+
+.task-title{
+  flex:1;font-size:14px;line-height:1.4;
+  transition:all .3s;
+  word-break:break-all;
+  cursor:pointer;
+  border-radius:6px;
+  padding:2px 4px;
+  margin:-2px -4px;
+}
+.task-title:hover{background:rgba(255,154,118,.1)}
+
+/* Priority */
+.priority-tag{
+  font-size:11px;
+  padding:2px 8px;
+  border-radius:10px;
+  font-weight:600;
+  flex-shrink:0;
+}
+.priority-high{background:#FDE8E8;color:#E74C3C}
+.priority-mid{background:#FEF3E0;color:#E6A23C}
+.priority-low{background:#E8F5E9;color:#67C23A}
+
+/* Delete */
+.task-del{
+  width:24px;height:24px;
+  border-radius:50%;
+  border:none;
+  background:transparent;
+  color:#ccc;
+  font-size:16px;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+  flex-shrink:0;
+}
+.task-del:hover{background:#FDE8E8;color:#E74C3C}
+
+.empty-msg{
+  text-align:center;
+  color:#ccc;font-size:14px;
+  padding:20px 0;
+}
+
+/* Deadline */
+.task-deadline{
+  font-size:11px;color:#aaa;
+  flex-shrink:0;
+}
+.task-deadline.overdue{color:#E74C3C;font-weight:600}
+
+/* ===== AI Suggestion Card ===== */
+.ai-card{
+  background:#fff;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,.06);
+  animation:cardIn .45s ease both;
+  animation-delay:.1s;
+}
+.ai-card-header{
+  padding:16px 20px;
+  background:linear-gradient(135deg,#FFC857,#FFE29A);
+  display:flex;align-items:center;gap:10px;
+  color:#7A5D00;
+}
+.ai-card-header .avatar{
+  background:rgba(255,255,255,.35);
+}
+.ai-card-header .name{font-size:18px;font-weight:700;color:#7A5D00;letter-spacing:.5px}
+.ai-text{
+  font-size:14px;line-height:1.9;
+  color:#5D4E37;
+  margin-bottom:16px;
+  min-height:60px;
+  white-space:pre-line;
+}
+.ai-text.loading{color:#aaa;font-style:italic}
+.refresh-btn{
+  padding:8px 20px;
+  border-radius:20px;
+  border:none;
+  background:linear-gradient(135deg,#FF9A76,#FECDA6);
+  color:#fff;font-size:13px;font-weight:600;
+  cursor:pointer;
+  transition:all .25s;
+  box-shadow:0 2px 8px rgba(255,154,118,.3);
+  width:100%;
+}
+.refresh-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(255,154,118,.4)}
+.refresh-btn:active{transform:scale(.97)}
+
+/* ===== FAB ===== */
+.fab{
+  position:fixed;right:28px;bottom:200px;
+  z-index:95;
+  width:56px;height:56px;
+  border-radius:50%;border:none;
+  background:linear-gradient(135deg,#FF8C42,#FF6B2B);
+  color:#fff;font-size:28px;
+  cursor:pointer;
+  box-shadow:0 4px 18px rgba(255,107,43,.4);
+  transition:all .3s;
+  display:flex;align-items:center;justify-content:center;
+}
+.fab:hover{transform:scale(1.1) rotate(90deg);box-shadow:0 6px 24px rgba(255,107,43,.5)}
+.fab:active{transform:scale(.95)}
+
+/* ===== Modal ===== */
+.modal-mask{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.35);
+  display:flex;align-items:center;justify-content:center;
+  animation:fadeIn .25s ease;
+  backdrop-filter:blur(2px);
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+.modal-box{
+  background:#fff;
+  border-radius:22px;
+  width:92%;max-width:440px;
+  max-height:90vh;
+  box-shadow:0 16px 48px rgba(0,0,0,.15);
+  animation:slideUp .35s cubic-bezier(.4,0,.2,1);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+
+.modal-header{
+  padding:20px 24px;
+  background:linear-gradient(135deg,#FF9A76 0%,#FECDA6 100%);
+  color:#fff;
+  font-size:18px;font-weight:700;
+  text-align:center;
+  flex-shrink:0;
+}
+.modal-body{padding:24px;overflow-y:auto;flex:1}
+
+.form-group{margin-bottom:18px}
+.form-group label{
+  display:block;
+  font-size:13px;font-weight:600;color:#666;
+  margin-bottom:6px;
+}
+.form-group select,
+.form-group input,
+.form-group textarea{
+  width:100%;
+  padding:10px 14px;
+  border:2px solid #EEE;
+  border-radius:12px;
+  font-size:14px;
+  transition:border-color .25s;
+  outline:none;
+  background:#FAFAFA;
+  font-family:inherit;
+}
+.form-group select:focus,
+.form-group input:focus,
+.form-group textarea:focus{
+  border-color:#FF9A76;
+  background:#fff;
+}
+.form-group textarea{resize:vertical;min-height:60px}
+
+.priority-options{display:flex;gap:10px}
+.priority-opt{
+  flex:1;
+  padding:8px 0;
+  border-radius:12px;
+  border:2px solid #eee;
+  text-align:center;
+  font-size:13px;font-weight:600;
+  cursor:pointer;
+  transition:all .25s;
+}
+.priority-opt:hover{border-color:#ddd}
+.priority-opt.sel-high{border-color:#E74C3C;background:#FDE8E8;color:#E74C3C}
+.priority-opt.sel-mid{border-color:#E6A23C;background:#FEF3E0;color:#E6A23C}
+.priority-opt.sel-low{border-color:#67C23A;background:#E8F5E9;color:#67C23A}
+
+.modal-footer{
+  display:flex;gap:12px;
+  padding:16px 24px 24px;
+  flex-shrink:0;
+}
+.btn-cancel,.btn-confirm{
+  flex:1;
+  padding:12px 0;
+  border-radius:14px;
+  border:none;
+  font-size:15px;font-weight:600;
+  cursor:pointer;
+  transition:all .25s;
+}
+.btn-cancel{background:#F5F5F5;color:#999}
+.btn-cancel:hover{background:#EBEBEB;color:#666}
+.btn-confirm{
+  background:linear-gradient(135deg,#FF9A76,#FF6B2B);
+  color:#fff;
+  box-shadow:0 4px 14px rgba(255,107,43,.3);
+}
+.btn-confirm:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(255,107,43,.4)}
+.btn-confirm:active{transform:scale(.97)}
+.btn-confirm:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* ===== Toast ===== */
+.toast{
+  position:fixed;top:80px;left:50%;transform:translateX(-50%);
+  z-index:999;
+  padding:10px 28px;
+  border-radius:12px;
+  font-size:14px;font-weight:500;
+  color:#fff;
+  box-shadow:0 4px 16px rgba(0,0,0,.15);
+  animation:toastIn .35s ease;
+  pointer-events:none;
+}
+.toast.success{background:linear-gradient(135deg,#67C23A,#95D475)}
+.toast.error{background:linear-gradient(135deg,#E74C3C,#F19D9D)}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,-20px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* ===== Responsive ===== */
+@media(max-width:1100px){
+  .main-layout{grid-template-columns:1fr 1fr;padding:16px;align-items:start}
+  .col-right{grid-column:1/-1}
+}
+@media(max-width:720px){
+  .main-layout{grid-template-columns:1fr;padding:12px}
+  .top-nav{padding:12px 16px}
+  .top-nav h1{font-size:18px}
+  .fab{right:20px;bottom:20px;width:50px;height:50px;font-size:24px}
+  .tabs{padding:14px 16px 4px}
+  .tab-btn{padding:8px 22px;font-size:14px}
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#ddd;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#bbb}
+
+/* ===== Settings Gear ===== */
+.settings-btn{
+  position:fixed;top:70px;right:20px;z-index:95;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.85);border:none;
+  font-size:18px;cursor:pointer;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);
+  transition:all .3s;
+  display:flex;align-items:center;justify-content:center;
+}
+.settings-btn:hover{transform:rotate(60deg);background:#fff}
+
+/* Settings Panel */
+.settings-panel{
+  position:fixed;top:0;right:0;bottom:0;z-index:300;
+  width:360px;max-width:90vw;
+  background:#fff;
+  box-shadow:-4px 0 24px rgba(0,0,0,.12);
+  animation:slideLeft .3s ease;
+  display:flex;flex-direction:column;
+}
+@keyframes slideLeft{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.settings-mask{
+  position:fixed;inset:0;z-index:299;
+  background:rgba(0,0,0,.3);
+  animation:fadeIn .25s ease;
+}
+.settings-header{
+  padding:20px;
+  background:linear-gradient(135deg,#FF9A76,#FECDA6);
+  color:#fff;font-size:17px;font-weight:700;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.settings-close{
+  background:rgba(255,255,255,.25);border:none;
+  color:#fff;font-size:18px;
+  width:32px;height:32px;border-radius:50%;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.settings-body{padding:20px;overflow-y:auto;flex:1}
+.settings-body .form-group{margin-bottom:16px}
+.settings-body .hint{font-size:11px;color:#aaa;margin-top:4px}
+.settings-save{
+  margin:20px;padding:12px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,#FF9A76,#FF6B2B);
+  color:#fff;font-size:15px;font-weight:600;cursor:pointer;
+  box-shadow:0 4px 14px rgba(255,107,43,.3);
+}
+
+/* ===== Summary Stats ===== */
+.summary-bar{
+  display:flex;justify-content:center;gap:24px;
+  padding:6px 24px 2px;
+  flex-wrap:wrap;
+}
+.summary-item{
+  font-size:13px;color:#999;
+  display:flex;align-items:center;gap:4px;
+}
+.summary-item strong{color:#FF8C42;font-size:16px}
+
+/* ===== Member Chips (multi-select) ===== */
+.member-chips{display:flex;flex-wrap:wrap;gap:8px}
+.member-chip{
+  display:flex;align-items:center;gap:5px;
+  padding:7px 14px;
+  border-radius:20px;
+  border:2px solid #eee;
+  font-size:13px;font-weight:600;
+  cursor:pointer;
+  transition:all .25s;
+  user-select:none;
+  background:#FAFAFA;
+}
+.member-chip:hover{border-color:#ddd;background:#f5f5f5}
+.member-chip.selected{color:#fff;border-color:transparent}
+.all-chip{
+  padding:7px 18px;
+  border-radius:20px;
+  border:2px solid #FF9A76;
+  font-size:13px;font-weight:600;
+  cursor:pointer;
+  transition:all .25s;
+  user-select:none;
+  background:#fff;
+  color:#FF9A76;
+  margin-bottom:4px;
+}
+.all-chip:hover{background:#FFF5EE}
+.all-chip.selected{
+  background:linear-gradient(135deg,#FF9A76,#FECDA6);
+  color:#fff;border-color:transparent;
+}
+
+/* Family sub-chips */
+.family-sub{
+  margin-top:8px;
+  padding:10px 12px;
+  background:#FFF8F0;
+  border-radius:12px;
+  border:1px dashed #F0C78A;
+}
+.family-sub-label{font-size:11px;color:#E6A23C;font-weight:600;margin-bottom:6px}
+.family-sub .member-chips{gap:6px}
+.family-sub .member-chip{padding:5px 12px;font-size:12px}
+
+/* ===== Deadline Hint ===== */
+.deadline-hint{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:6px;
+  font-size:12px;
+  padding:4px 12px;
+  border-radius:10px;
+  font-weight:600;
+}
+.deadline-hint.hint-today{background:#E8F5E9;color:#67C23A}
+.deadline-hint.hint-week{background:#E3F2FD;color:#4A90D9}
+.deadline-hint.hint-later{background:#F3E5F5;color:#9B59B6}
+
+/* ===== Multi-member avatars in task ===== */
+.task-members{
+  display:flex;gap:2px;
+  flex-shrink:0;
+}
+.member-avatar-mini{
+  width:20px;height:20px;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;
+  background:#f0f0f0;
+}
+
+/* ===== Elder tag in family card ===== */
+.elder-tag{
+  font-size:10px;
+  padding:1px 7px;
+  border-radius:8px;
+  background:#FEF3E0;
+  color:#E6A23C;
+  font-weight:600;
+  flex-shrink:0;
+  white-space:nowrap;
+}
+
+/* ===== Future Task (beyond this week) ===== */
+.task-item.future{opacity:.55}
+.task-item.future .task-title{color:#aaa}
+.future-tag{
+  font-size:10px;
+  padding:1px 6px;
+  border-radius:8px;
+  background:#F5F5F5;
+  color:#bbb;
+  font-weight:600;
+  flex-shrink:0;
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- Top Nav -->
+  <header class="top-nav">
+    <h1>🏠 家庭贴心管家</h1>
+    <span class="date">📅 {{ todayStr }}</span>
+  </header>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn" :class="{active: tab==='today'}" @click="tab='today'">📋 今日任务</button>
+    <button class="tab-btn" :class="{active: tab==='week'}" @click="tab='week'">🗓️ 本周任务</button>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-bar">
+    <span class="summary-item">总任务 <strong>{{ currentTasks.length }}</strong></span>
+    <span class="summary-item">已完成 <strong>{{ doneCount }}</strong></span>
+    <span class="summary-item">完成率 <strong>{{ donePercent }}%</strong></span>
+  </div>
+
+  <!-- Three-Column Layout -->
+  <div class="main-layout">
+    <!-- Col 1: 多人任务 -->
+    <div class="col-left">
+      <div class="member-card" style="animation-delay:0s">
+        <div class="card-header" :style="{background: multiCard.gradient}">
+          <div class="avatar">{{ multiCard.emoji }}</div>
+          <span class="name">{{ multiCard.name }}</span>
+          <span class="progress-text">{{ cardDone('multi') }}/{{ cardTasks('multi').length }}</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill"
+               :style="{width: cardProgress('multi')+'%', background: multiCard.color}"></div>
+        </div>
+        <div class="task-list">
+          <div v-if="cardTasks('multi').length===0" class="empty-msg">暂无多人任务 ✨</div>
+          <div class="task-item" :class="{done:t.done, future:getTaskType(t.deadline)==='later'}"
+               v-for="t in cardTasks('multi')" :key="t.id">
+            <div class="task-check" :class="{checked:t.done}" @click="toggleTask(t)"></div>
+            <span class="task-title" @click="openEdit(t)">{{ t.title }}</span>
+            <span class="task-members">
+              <span class="member-avatar-mini" v-for="mk in t.member" :key="mk" :title="personName(mk)">{{ personEmoji(mk) }}</span>
+            </span>
+            <span v-if="getTaskType(t.deadline)==='later'" class="future-tag">以后</span>
+            <span v-if="t.deadline" class="task-deadline" :class="{overdue:isOverdue(t)}">
+              {{ formatDeadline(t.deadline) }}
+            </span>
+            <span class="priority-tag"
+                  :class="'priority-'+t.priority">{{ priorityLabel(t.priority) }}</span>
+            <button class="task-del" @click="deleteTask(t)" title="删除">×</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Col 2: 个人任务 (强哥 → 桃子 → 小宝 → 家人) -->
+    <div class="col-mid">
+      <div class="member-card" v-for="c in soloCards" :key="c.key"
+           :style="{'animation-delay': c.delay}">
+        <div class="card-header" :style="{background: c.gradient}">
+          <div class="avatar">{{ c.emoji }}</div>
+          <span class="name">{{ c.name }}</span>
+          <span class="progress-text">{{ cardDone(c.key) }}/{{ cardTasks(c.key).length }}</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill"
+               :style="{width: cardProgress(c.key)+'%', background: c.color}"></div>
+        </div>
+        <div class="task-list">
+          <div v-if="cardTasks(c.key).length===0" class="empty-msg">暂无任务 ✨</div>
+          <div class="task-item" :class="{done:t.done, future:getTaskType(t.deadline)==='later'}"
+               v-for="t in cardTasks(c.key)" :key="t.id">
+            <div class="task-check" :class="{checked:t.done}" @click="toggleTask(t)"></div>
+            <span class="task-title" @click="openEdit(t)">{{ t.title }}</span>
+            <span v-if="c.key==='family'" class="elder-tag">{{ personName(t.member[0]) }}</span>
+            <span v-if="getTaskType(t.deadline)==='later'" class="future-tag">以后</span>
+            <span v-if="t.deadline" class="task-deadline" :class="{overdue:isOverdue(t)}">
+              {{ formatDeadline(t.deadline) }}
+            </span>
+            <span class="priority-tag"
+                  :class="'priority-'+t.priority">{{ priorityLabel(t.priority) }}</span>
+            <button class="task-del" @click="deleteTask(t)" title="删除">×</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Col 3: AI 建议 -->
+    <div class="col-right">
+      <div class="ai-card">
+        <div class="ai-card-header">
+          <div class="avatar">💡</div>
+          <span class="name">AI 建议</span>
+        </div>
+        <div class="ai-card-body">
+          <div class="ai-text" :class="{loading: aiLoading}">{{ aiText }}</div>
+          <button class="refresh-btn" @click="fetchAiSuggestion" :disabled="aiLoading">
+            {{ aiLoading ? '⏳ 生成中…' : '🔄 刷新建议' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAB -->
+  <button class="fab" @click="openAdd" title="添加任务">+</button>
+
+  <!-- Settings Gear -->
+  <button class="settings-btn" @click="showSettings=true" title="设置">⚙️</button>
+
+  <!-- Settings Panel -->
+  <template v-if="showSettings">
+    <div class="settings-mask" @click="showSettings=false"></div>
+    <div class="settings-panel">
+      <div class="settings-header">
+        <span>⚙️ 连接设置</span>
+        <button class="settings-close" @click="showSettings=false">×</button>
+      </div>
+      <div class="settings-body">
+        <div class="form-group">
+          <label>Supabase URL</label>
+          <input v-model="config.supabaseUrl" placeholder="https://xxx.supabase.co">
+          <div class="hint">你的 Supabase 项目 URL</div>
+        </div>
+        <div class="form-group">
+          <label>Supabase Anon Key</label>
+          <input v-model="config.supabaseKey" placeholder="eyJ...">
+          <div class="hint">项目的 anon/public key</div>
+        </div>
+        <div class="form-group">
+          <label>AI API 地址（可选）</label>
+          <input v-model="config.aiApiUrl" placeholder="https://api.example.com/suggestions">
+          <div class="hint">用于获取 AI 温馨建议的接口地址</div>
+        </div>
+        <div class="form-group">
+          <label>AI API Key（可选）</label>
+          <input v-model="config.aiApiKey" type="password" placeholder="sk-...">
+          <div class="hint">调用 AI 接口的 API Key</div>
+        </div>
+      </div>
+      <button class="settings-save" @click="saveConfig">💾 保存设置</button>
+    </div>
+  </template>
+
+  <!-- Add / Edit Task Modal -->
+  <div class="modal-mask" v-if="showModal" @click.self="closeModal">
+    <div class="modal-box">
+      <div class="modal-header">{{ editingId ? '📝 编辑任务' : '✏️ 添加新任务' }}</div>
+      <div class="modal-body">
+        <!-- 成员选择 -->
+        <div class="form-group">
+          <label>选择成员</label>
+          <div style="margin-bottom:8px">
+            <span class="all-chip" :class="{selected: isAllSelected}" @click="toggleAll">👨‍👩‍👧‍👦 全员</span>
+          </div>
+          <div class="member-chips">
+            <span class="member-chip" v-for="c in mainChips" :key="c.key"
+                  :class="{selected: isChipSelected(c)}"
+                  :style="isChipSelected(c) ? {background:c.color,borderColor:c.color} : {}"
+                  @click="toggleChip(c)">
+              {{ c.emoji }} {{ c.name }}
+            </span>
+          </div>
+          <!-- 家人子选项 -->
+          <div class="family-sub" v-if="showFamilySub">
+            <div class="family-sub-label">选择家人</div>
+            <div class="member-chips">
+              <span class="member-chip" v-for="e in familyElders" :key="e.key"
+                    :class="{selected: form.members.includes(e.key)}"
+                    :style="form.members.includes(e.key) ? {background:'#E6A23C',borderColor:'#E6A23C'} : {}"
+                    @click="toggleElderChip(e.key)">
+                {{ e.emoji }} {{ e.name }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <!-- 任务名称 -->
+        <div class="form-group">
+          <label>任务名称</label>
+          <input v-model.trim="form.title" placeholder="例如：买菜、做作业…" maxlength="80"
+                 @keyup.enter="saveTask">
+        </div>
+        <!-- 优先级 -->
+        <div class="form-group">
+          <label>优先级</label>
+          <div class="priority-options">
+            <div class="priority-opt" :class="{'sel-high':form.priority==='high'}"
+                 @click="form.priority='high'">🔴 高</div>
+            <div class="priority-opt" :class="{'sel-mid':form.priority==='mid'}"
+                 @click="form.priority='mid'">🟡 中</div>
+            <div class="priority-opt" :class="{'sel-low':form.priority==='low'}"
+                 @click="form.priority='low'">🟢 低</div>
+          </div>
+        </div>
+        <!-- 截止日期 -->
+        <div class="form-group">
+          <label>截止日期</label>
+          <input type="date" v-model="form.deadline">
+          <div v-if="form.deadline" class="deadline-hint" :class="'hint-'+deadlinePreviewType">
+            {{ deadlinePreviewText }}
+          </div>
+        </div>
+        <!-- 备注 -->
+        <div class="form-group">
+          <label>备注（可选）</label>
+          <textarea v-model.trim="form.note" placeholder="添加备注…" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" @click="closeModal">取消</button>
+        <button class="btn-confirm" @click="saveTask"
+                :disabled="!form.members.length||!form.title||!form.deadline">
+          {{ editingId ? '保存修改' : '确认添加' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" :class="toast.type" v-if="toast.show">{{ toast.msg }}</div>
+</div>
+
+<script>
+const { createApp, ref, computed, onMounted, reactive } = Vue;
+
+// ===== All person keys & info =====
+const ALL_PEOPLE = {
+  dad:    { name:'强哥', emoji:'👨' },
+  mom:    { name:'桃子', emoji:'👩' },
+  baby:   { name:'小宝', emoji:'🧒' },
+  gpa:    { name:'外公', emoji:'👴' },
+  gma:    { name:'外婆', emoji:'👵' },
+  yeye:   { name:'爷爷', emoji:'👴' },
+  nainai: { name:'奶奶', emoji:'👵' },
+};
+const ALL_KEYS = Object.keys(ALL_PEOPLE);
+const ELDER_KEYS = ['gpa','gma','yeye','nainai'];
+
+// Cards displayed in the grid
+// Left column
+const MULTI_CARD = { key:'multi', name:'多人', emoji:'👥', color:'#9B59B6', gradient:'linear-gradient(135deg,#9B59B6,#C39BD3)' };
+
+// Right column (top to bottom)
+const SOLO_CARDS = [
+  { key:'dad',    name:'强哥', emoji:'👨', color:'#4A90D9', gradient:'linear-gradient(135deg,#4A90D9,#7AB8F5)', delay:'0s' },
+  { key:'mom',    name:'桃子', emoji:'👩', color:'#E8789A', gradient:'linear-gradient(135deg,#E8789A,#F4A5BB)', delay:'0.06s' },
+  { key:'baby',   name:'小宝', emoji:'🧒', color:'#67C23A', gradient:'linear-gradient(135deg,#67C23A,#95D475)', delay:'0.12s' },
+  { key:'family', name:'家人', emoji:'🏡', color:'#E6A23C', gradient:'linear-gradient(135deg,#E6A23C,#F0C78A)', delay:'0.18s' },
+];
+
+// Form top-level chips
+const MAIN_CHIPS = [
+  { key:'dad',    name:'强哥', emoji:'👨', color:'#4A90D9', type:'person' },
+  { key:'mom',    name:'桃子', emoji:'👩', color:'#E8789A', type:'person' },
+  { key:'baby',   name:'小宝', emoji:'🧒', color:'#67C23A', type:'person' },
+  { key:'family', name:'家人', emoji:'🏡', color:'#E6A23C', type:'group'  },
+];
+
+const FAMILY_ELDERS = [
+  { key:'gpa',    name:'外公', emoji:'👴' },
+  { key:'gma',    name:'外婆', emoji:'👵' },
+  { key:'yeye',   name:'爷爷', emoji:'👴' },
+  { key:'nainai', name:'奶奶', emoji:'👵' },
+];
+
+const DEFAULT_SUGGESTIONS = [
+  "今天天气不错，建议家人们下午去公园散散步🌿\n小宝记得完成作业后再去玩哦📚\n桃子辛苦了，晚上泡个脚休息一下吧💆‍♀️",
+  "全家人今天都要多喝水哦 💧\n小宝的任务不多，完成后可以陪长辈聊聊天\n强哥工作别太累，记得站起来活动活动 🧘",
+  "周末快到了，可以计划一次家庭聚餐 🍲\n长辈们可以教小宝做一道拿手菜\n大家一起分担家务，效率更高哦 💪",
+  "早睡早起身体好！建议全家22:30前休息 🌙\n小宝今天表现棒棒的，记得夸夸TA\n强哥桃子别忘了关心一下长辈们的身体",
+  "今天任务有点多，建议先做优先级高的 🎯\n长辈们注意天气变化，出门注意保暖 🧣\n一家人齐心协力，什么困难都不怕！❤️"
+];
+
+const STORAGE_KEY = 'family_butler_tasks_v2';
+const CONFIG_KEY  = 'family_butler_config';
+
+createApp({
+  setup(){
+    const multiCard = MULTI_CARD;
+    const soloCards = SOLO_CARDS;
+    const mainChips = MAIN_CHIPS;
+    const familyElders = FAMILY_ELDERS;
+    const tab = ref('today');
+    const tasks = ref([]);
+    const showModal = ref(false);
+    const showSettings = ref(false);
+    const showFamilySub = ref(false);
+    const editingId = ref(null);
+    const aiLoading = ref(false);
+    const aiText = ref(DEFAULT_SUGGESTIONS[0]);
+    const toast = reactive({ show:false, msg:'', type:'success' });
+
+    const config = reactive({
+      supabaseUrl:'',
+      supabaseKey:'',
+      aiApiUrl:'',
+      aiApiKey:'',
+    });
+
+    let supabase = null;
+
+    const form = reactive({
+      members:[], title:'', priority:'mid', deadline:'', note:''
+    });
+
+    // ===== Date helpers =====
+    const WEEKDAYS = ['日','一','二','三','四','五','六'];
+
+    const todayStr = computed(()=>{
+      const d=new Date();
+      return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 星期${WEEKDAYS[d.getDay()]}`;
+    });
+
+    const todayISO = computed(()=>{
+      const d=new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    });
+
+    function getMonday(d){
+      const dt=new Date(d); const day=dt.getDay();
+      const diff=day===0?-6:1-day;
+      dt.setDate(dt.getDate()+diff); dt.setHours(0,0,0,0);
+      return dt;
+    }
+    function getSunday(d){
+      const mon=getMonday(d);
+      mon.setDate(mon.getDate()+6); mon.setHours(23,59,59,999);
+      return mon;
+    }
+
+    function getTaskType(deadline){
+      if(!deadline) return 'today';
+      const now=new Date(); const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+      const dl=new Date(deadline+'T00:00:00');
+      if(dl.getTime()===today.getTime()) return 'today';
+      const sun=getSunday(now);
+      if(dl>=today && dl<=sun) return 'week';
+      return 'later';
+    }
+
+    // ===== Person helpers =====
+    function personName(key){ return ALL_PEOPLE[key]?.name || key; }
+    function personEmoji(key){ return ALL_PEOPLE[key]?.emoji || '👤'; }
+
+    // ===== Card task filtering =====
+    const currentTasks = computed(()=> tasks.value.filter(t=>{
+      const tt = getTaskType(t.deadline);
+      if(tab.value==='today') return tt==='today';
+      return tt==='week' || tt==='later';
+    }));
+    const doneCount = computed(()=> currentTasks.value.filter(t=>t.done).length);
+    const donePercent = computed(()=>{
+      if(!currentTasks.value.length) return 0;
+      return Math.round(doneCount.value / currentTasks.value.length * 100);
+    });
+
+    function cardTasks(cardKey){
+      return currentTasks.value.filter(t=>{
+        const m = Array.isArray(t.member) ? t.member : [t.member];
+        if(cardKey==='multi') return m.length > 1;
+        if(cardKey==='family') return m.length===1 && ELDER_KEYS.includes(m[0]);
+        return m.length===1 && m[0]===cardKey;
+      });
+    }
+    function cardDone(cardKey){ return cardTasks(cardKey).filter(t=>t.done).length; }
+    function cardProgress(cardKey){
+      const list=cardTasks(cardKey);
+      if(!list.length) return 0;
+      return Math.round(list.filter(t=>t.done).length/list.length*100);
+    }
+
+    function priorityLabel(p){return {high:'高',mid:'中',low:'低'}[p]||'中';}
+
+    function isOverdue(t){
+      if(!t.deadline || t.done) return false;
+      return new Date(t.deadline+'T00:00:00') < new Date(new Date().toDateString());
+    }
+
+    function formatDeadline(d){
+      if(!d) return '';
+      const date=new Date(d+'T00:00:00');
+      return `${date.getMonth()+1}/${date.getDate()} 周${WEEKDAYS[date.getDay()]}`;
+    }
+
+    // ===== Form: member selection =====
+    const isAllSelected = computed(()=>{
+      return ALL_KEYS.every(k=> form.members.includes(k));
+    });
+
+    function isChipSelected(chip){
+      if(chip.type==='group'){
+        return ELDER_KEYS.some(k=> form.members.includes(k));
+      }
+      return form.members.includes(chip.key);
+    }
+
+    function toggleChip(chip){
+      if(chip.type==='group'){
+        showFamilySub.value = !showFamilySub.value;
+        return;
+      }
+      const idx=form.members.indexOf(chip.key);
+      if(idx===-1) form.members.push(chip.key);
+      else form.members.splice(idx,1);
+    }
+
+    function toggleElderChip(key){
+      const idx=form.members.indexOf(key);
+      if(idx===-1) form.members.push(key);
+      else form.members.splice(idx,1);
+    }
+
+    function toggleAll(){
+      if(isAllSelected.value) form.members.splice(0);
+      else{
+        form.members.splice(0);
+        ALL_KEYS.forEach(k=> form.members.push(k));
+        showFamilySub.value = true;
+      }
+    }
+
+    // Deadline preview
+    const deadlinePreviewType = computed(()=> form.deadline ? getTaskType(form.deadline) : '');
+    const deadlinePreviewText = computed(()=>{
+      if(!form.deadline) return '';
+      const d=new Date(form.deadline+'T00:00:00');
+      const dateStr=`${d.getMonth()+1}月${d.getDate()}日 周${WEEKDAYS[d.getDay()]}`;
+      const typeMap={today:'→ 今日任务',week:'→ 本周任务',later:'→ 以后完成'};
+      return `${dateStr} ${typeMap[getTaskType(form.deadline)]}`;
+    });
+
+    // ===== Toast =====
+    function showToast(msg, type='success'){
+      toast.msg=msg; toast.type=type; toast.show=true;
+      setTimeout(()=>{ toast.show=false; }, 2200);
+    }
+
+    // ===== Persistence =====
+    function saveTasks(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks.value));
+      if(supabase) syncToSupabase();
+    }
+
+    function loadTasks(){
+      try{
+        // Try v2 first, then fall back to v1
+        let raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) raw = localStorage.getItem('family_butler_tasks');
+        if(raw){
+          tasks.value = JSON.parse(raw).map(t=>{
+            if(typeof t.member==='string') t.member=[t.member];
+            if(!t.deadline) t.deadline=todayISO.value;
+            return t;
+          });
+        }
+      }catch(e){}
+    }
+
+    function loadConfig(){
+      try{
+        const raw = localStorage.getItem(CONFIG_KEY);
+        if(raw){
+          const c = JSON.parse(raw);
+          Object.assign(config, c);
+        }
+      }catch(e){}
+    }
+
+    function saveConfig(){
+      localStorage.setItem(CONFIG_KEY, JSON.stringify({...config}));
+      initSupabase();
+      showSettings.value=false;
+      showToast('设置已保存');
+    }
+
+    function initSupabase(){
+      if(config.supabaseUrl && config.supabaseKey){
+        try{
+          supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+          fetchFromSupabase();
+        }catch(e){
+          console.warn('Supabase init failed:', e);
+          supabase = null;
+        }
+      }
+    }
+
+    async function fetchFromSupabase(){
+      if(!supabase) return;
+      try{
+        const { data, error } = await supabase.from('tasks').select('*');
+        if(!error && data && data.length){
+          tasks.value = data.map(d=>({
+            id: d.id,
+            member: Array.isArray(d.member) ? d.member : [d.member],
+            title: d.title,
+            priority: d.priority || 'mid',
+            deadline: d.deadline || todayISO.value,
+            note: d.note || '',
+            done: !!d.done,
+          }));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks.value));
+        }
+      }catch(e){ console.warn('Supabase fetch error:', e); }
+    }
+
+    async function syncToSupabase(){
+      if(!supabase) return;
+      try{
+        await supabase.from('tasks').delete().neq('id', '');
+        if(tasks.value.length){
+          await supabase.from('tasks').insert(tasks.value.map(t=>({
+            id:t.id, member:t.member, title:t.title,
+            priority:t.priority,
+            deadline:t.deadline||null, note:t.note||'', done:t.done
+          })));
+        }
+      }catch(e){ console.warn('Supabase sync error:', e); }
+    }
+
+    // ===== Modal open/close =====
+    function resetForm(){
+      form.members.splice(0);
+      form.title='';
+      form.priority='mid';
+      form.deadline=todayISO.value;
+      form.note='';
+      showFamilySub.value=false;
+    }
+
+    function openAdd(){
+      editingId.value=null;
+      resetForm();
+      showModal.value=true;
+    }
+
+    function openEdit(t){
+      editingId.value=t.id;
+      form.members.splice(0);
+      t.member.forEach(k=> form.members.push(k));
+      form.title=t.title;
+      form.priority=t.priority;
+      form.deadline=t.deadline||todayISO.value;
+      form.note=t.note||'';
+      showFamilySub.value = t.member.some(k=> ELDER_KEYS.includes(k));
+      showModal.value=true;
+    }
+
+    function closeModal(){
+      showModal.value=false;
+      editingId.value=null;
+    }
+
+    // ===== Save (add or update) =====
+    function saveTask(){
+      if(!form.members.length || !form.title || !form.deadline) return;
+
+      if(editingId.value){
+        const t = tasks.value.find(x=>x.id===editingId.value);
+        if(t){
+          t.member=[...form.members];
+          t.title=form.title;
+          t.priority=form.priority;
+          t.deadline=form.deadline;
+          t.note=form.note;
+        }
+        saveTasks();
+        closeModal();
+        showToast('任务已更新 ✅');
+      } else {
+        const t={
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+          member: [...form.members],
+          title: form.title,
+          priority: form.priority,
+          deadline: form.deadline,
+          note: form.note,
+          done: false,
+        };
+        tasks.value.push(t);
+        saveTasks();
+        closeModal();
+        showToast('任务添加成功 ✨');
+      }
+    }
+
+    function toggleTask(t){
+      t.done = !t.done;
+      saveTasks();
+      if(t.done) showToast(`「${t.title}」已完成 🎉`);
+    }
+
+    function deleteTask(t){
+      tasks.value = tasks.value.filter(x=>x.id!==t.id);
+      saveTasks();
+      showToast('任务已删除');
+    }
+
+    // ===== AI Suggestion =====
+    const BACKEND_URL = 'http://localhost:3000';
+
+    async function fetchAiSuggestion(){
+      aiLoading.value = true;
+
+      try{
+        const res = await fetch(`${BACKEND_URL}/api/suggestion`, { signal: AbortSignal.timeout(15000) });
+        const data = await res.json();
+        if(data.suggestion){
+          aiText.value = data.suggestion;
+          aiLoading.value = false;
+          return;
+        }
+      }catch(e){
+        console.warn('后端接口不可用，使用本地建议:', e.message);
+      }
+
+      if(config.aiApiUrl){
+        try{
+          const headers = { 'Content-Type':'application/json' };
+          if(config.aiApiKey) headers['Authorization'] = `Bearer ${config.aiApiKey}`;
+
+          const res = await fetch(config.aiApiUrl, {
+            method:'POST', headers,
+            body: JSON.stringify({
+              model:'qwen-turbo', max_tokens:300,
+              messages:[{role:'user',
+                content:'你是一个温馨的家庭管家AI。请给出3条温馨、实用的家庭建议（每条一行，带emoji）。直接输出建议。'
+              }]
+            })
+          });
+          const data = await res.json();
+          if(data.choices?.[0]?.message?.content){
+            aiText.value = data.choices[0].message.content;
+            aiLoading.value = false;
+            return;
+          }
+        }catch(e){ console.warn('AI API error:', e); }
+      }
+
+      await new Promise(r=>setTimeout(r, 600));
+      aiText.value = DEFAULT_SUGGESTIONS[Math.floor(Math.random()*DEFAULT_SUGGESTIONS.length)];
+      aiLoading.value = false;
+    }
+
+    // ===== Init =====
+    onMounted(()=>{
+      loadConfig();
+      loadTasks();
+      initSupabase();
+
+      form.deadline = todayISO.value;
+
+      if(!tasks.value.length){
+        const today = new Date();
+        const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        const todayD = fmt(today);
+        const addDays = n => { const d=new Date(today); d.setDate(d.getDate()+n); return fmt(d); };
+        const sat = addDays((6-today.getDay()+7)%7||7);
+        const sun = addDays((7-today.getDay())%7||7);
+        const wed = addDays((3-today.getDay()+7)%7||7);
+        const nextWeek = addDays(8);
+
+        const demos = [
+          { member:['dad'],    title:'检查家里水电表',      deadline:todayD,   priority:'mid'  },
+          { member:['dad'],    title:'修理厨房水龙头',      deadline:wed,      priority:'high' },
+          { member:['mom'],    title:'准备晚餐食材',        deadline:todayD,   priority:'high' },
+          { member:['mom'],    title:'预约小宝体检',        deadline:wed,      priority:'mid'  },
+          { member:['baby'],   title:'完成数学作业',        deadline:todayD,   priority:'high' },
+          { member:['baby'],   title:'练习钢琴30分钟',     deadline:todayD,   priority:'mid'  },
+          { member:['baby'],   title:'整理书桌和书包',      deadline:sun,      priority:'low'  },
+          { member:['gpa'],    title:'早晨散步30分钟',     deadline:todayD,   priority:'mid'  },
+          { member:['gpa'],    title:'下午量血压',          deadline:todayD,   priority:'high' },
+          { member:['gma'],    title:'浇阳台的花',          deadline:todayD,   priority:'low'  },
+          { member:['nainai'], title:'整理换季衣物',        deadline:sat,      priority:'mid'  },
+          { member:['yeye'],   title:'下棋休闲放松',        deadline:sun,      priority:'low'  },
+          { member:['dad','mom','baby','gpa','gma','yeye','nainai'], title:'全家大扫除', deadline:sat, priority:'mid' },
+          { member:['mom','gma'],       title:'一起包饺子',     deadline:sun,      priority:'low'  },
+          { member:['dad','baby'],      title:'父子骑车锻炼',   deadline:sun,      priority:'low'  },
+          { member:['dad','gpa','yeye'], title:'去超市买米面油', deadline:nextWeek, priority:'low'  },
+        ];
+        tasks.value = demos.map((d,i)=>({
+          ...d, id: Date.now().toString(36)+i, note:'', done:false
+        }));
+        saveTasks();
+      }
+    });
+
+    return {
+      multiCard, soloCards, mainChips, familyElders,
+      tab, tasks, showModal, showSettings, showFamilySub, editingId,
+      aiLoading, aiText, toast, config, form,
+      todayStr, todayISO, currentTasks, doneCount, donePercent,
+      cardTasks, cardDone, cardProgress, getTaskType,
+      personName, personEmoji,
+      priorityLabel, isOverdue, formatDeadline,
+      isAllSelected, isChipSelected, toggleChip, toggleElderChip, toggleAll,
+      deadlinePreviewType, deadlinePreviewText,
+      openAdd, openEdit, closeModal, saveTask,
+      toggleTask, deleteTask,
+      saveConfig, fetchAiSuggestion, showToast,
+    };
+  }
+}).mount('#app');
+</script>
+</body>
+</html>
