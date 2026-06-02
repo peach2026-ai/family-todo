@@ -1313,6 +1313,7 @@ createApp({
         if(!url || !key) return;
         supabase = window.supabase.createClient(url, key);
         fetchFromSupabase();
+        fetchItemsFromSupabase();
       }catch(e){
         console.warn('Supabase init failed:', e);
         supabase = null;
@@ -1570,6 +1571,44 @@ createApp({
     }
     function saveItems(){
       localStorage.setItem(ITEMS_KEY, JSON.stringify(items.value));
+      if(supabase) syncItemsToSupabase();
+    }
+
+    async function fetchItemsFromSupabase(){
+      if(!supabase) return;
+      try{
+        const {data,error}=await supabase.from('items').select('*');
+        if(error){console.warn('Items fetch error:',error.message);return;}
+        if(data && data.length){
+          items.value=data.map(d=>({
+            id:d.id, name:d.name, category:d.category||'其他',
+            production_date:d.production_date||'', shelf_life_days:d.shelf_life_days||'',
+            expiry_date:d.expiry_date, image_url:d.image_url||'',
+            images:d.images||[], note:d.note||'', created_at:d.created_at
+          }));
+          localStorage.setItem(ITEMS_KEY, JSON.stringify(items.value));
+        } else if(data && data.length===0 && items.value.length){
+          await syncItemsToSupabase();
+        }
+      }catch(e){console.warn('Items fetch error:',e);}
+    }
+
+    async function syncItemsToSupabase(){
+      if(!supabase) return;
+      try{
+        await supabase.from('items').delete().neq('id','');
+        if(items.value.length){
+          await supabase.from('items').insert(items.value.map(it=>({
+            id:it.id, name:it.name, category:it.category,
+            production_date:it.production_date||null,
+            shelf_life_days:it.shelf_life_days||null,
+            expiry_date:it.expiry_date,
+            image_url:it.image_url||null,
+            images:it.images||[],
+            note:it.note||'',
+          })));
+        }
+      }catch(e){console.warn('Items sync error:',e);}
     }
 
     function resetItemForm(){
