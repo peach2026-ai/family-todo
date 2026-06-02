@@ -29,25 +29,8 @@ body{
 .top-nav h1{font-size:22px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.15);letter-spacing:1px}
 .top-nav .date{font-size:14px;color:rgba(255,255,255,.9);background:rgba(255,255,255,.25);padding:4px 12px;border-radius:20px}
 
-/* ===== Tabs ===== */
-.tabs{
-  display:flex;justify-content:center;gap:12px;
-  padding:20px 24px 8px;
-}
-.tab-btn{
-  padding:10px 32px;border-radius:24px;border:none;
-  font-size:15px;font-weight:600;cursor:pointer;
-  transition:all .3s;
-  background:#fff;color:#999;
-  box-shadow:0 2px 8px rgba(0,0,0,.06);
-}
-.tab-btn.active{
-  background:linear-gradient(135deg,#FF9A76,#FECDA6);
-  color:#fff;
-  box-shadow:0 4px 14px rgba(255,154,118,.35);
-  transform:translateY(-1px);
-}
-.tab-btn:hover:not(.active){color:#FF9A76;background:#FFF5EE}
+/* ===== Today Card ===== */
+.today-card .task-members{margin-right:4px}
 
 /* ===== Three-Column Layout ===== */
 .main-layout{
@@ -420,8 +403,6 @@ body{
   .top-nav{padding:12px 16px}
   .top-nav h1{font-size:18px}
   .fab{right:20px;bottom:20px;width:50px;height:50px;font-size:24px}
-  .tabs{padding:14px 16px 4px}
-  .tab-btn{padding:8px 22px;font-size:14px}
 }
 
 /* ===== Scrollbar ===== */
@@ -597,16 +578,10 @@ body{
     <span class="date">📅 {{ todayStr }}</span>
   </header>
 
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab-btn" :class="{active: tab==='today'}" @click="tab='today'">📋 今日任务</button>
-    <button class="tab-btn" :class="{active: tab==='week'}" @click="tab='week'">🗓️ 本周任务</button>
-  </div>
-
   <!-- Summary -->
   <div class="summary-bar">
-    <span class="summary-item">总任务 <strong>{{ currentTasks.length }}</strong></span>
-    <span class="summary-item">已完成 <strong>{{ doneCount }}</strong></span>
+    <span class="summary-item">本周任务 <strong>{{ weekTasks.length }}</strong></span>
+    <span class="summary-item">今日任务 <strong>{{ todayTasks.length }}</strong></span>
     <span class="summary-item">完成率 <strong>{{ donePercent }}%</strong></span>
   </div>
 
@@ -626,15 +601,14 @@ body{
         </div>
         <div class="task-list">
           <div v-if="cardTasks('multi').length===0" class="empty-msg">暂无多人任务 ✨</div>
-          <div class="task-item" :class="{done:t.done, future:getTaskType(t.deadline)==='later'}"
+          <div class="task-item" :class="{done:t.done, future:false}"
                v-for="t in cardTasks('multi')" :key="t.id">
             <div class="task-check" :class="{checked:t.done}" @click="toggleTask(t)"></div>
             <span class="task-title" @click="openEdit(t)">{{ t.title }}</span>
             <span class="task-members">
               <span class="member-avatar-mini" v-for="mk in t.member" :key="mk" :title="personName(mk)">{{ personEmoji(mk) }}</span>
             </span>
-            <span v-if="getTaskType(t.deadline)==='later'" class="future-tag">以后</span>
-            <span v-if="t.deadline" class="task-deadline" :class="{overdue:isOverdue(t)}">
+                        <span v-if="t.deadline" class="task-deadline" :class="{overdue:isOverdue(t)}">
               {{ formatDeadline(t.deadline) }}
             </span>
             <span class="priority-tag"
@@ -660,13 +634,12 @@ body{
         </div>
         <div class="task-list">
           <div v-if="cardTasks(c.key).length===0" class="empty-msg">暂无任务 ✨</div>
-          <div class="task-item" :class="{done:t.done, future:getTaskType(t.deadline)==='later'}"
+          <div class="task-item" :class="{done:t.done, future:false}"
                v-for="t in cardTasks(c.key)" :key="t.id">
             <div class="task-check" :class="{checked:t.done}" @click="toggleTask(t)"></div>
             <span class="task-title" @click="openEdit(t)">{{ t.title }}</span>
             <span v-if="c.key==='family'" class="elder-tag">{{ personName(t.member[0]) }}</span>
-            <span v-if="getTaskType(t.deadline)==='later'" class="future-tag">以后</span>
-            <span v-if="t.deadline" class="task-deadline" :class="{overdue:isOverdue(t)}">
+                        <span v-if="t.deadline" class="task-deadline" :class="{overdue:isOverdue(t)}">
               {{ formatDeadline(t.deadline) }}
             </span>
             <span class="priority-tag"
@@ -677,8 +650,35 @@ body{
       </div>
     </div>
 
-    <!-- Col 3: AI 建议 -->
+    <!-- Col 3: 今日任务 + AI 建议 -->
     <div class="col-right">
+      <!-- 今日任务 -->
+      <div class="member-card today-card">
+        <div class="card-header" style="background:linear-gradient(135deg,#FF6B6B,#FFA07A)">
+          <div class="avatar">📋</div>
+          <span class="name">今日任务</span>
+          <span class="progress-text">{{ todayDone }}/{{ todayTasks.length }}</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill"
+               :style="{width: todayProgress+'%', background:'#FF6B6B'}"></div>
+        </div>
+        <div class="task-list">
+          <div v-if="todayTasks.length===0" class="empty-msg">今日无任务 🎉</div>
+          <div class="task-item" :class="{done:t.done}"
+               v-for="t in todayTasks" :key="t.id">
+            <div class="task-check" :class="{checked:t.done}" @click="toggleTask(t)"></div>
+            <span class="task-members">
+              <span class="member-avatar-mini" v-for="mk in t.member" :key="mk" :title="personName(mk)">{{ personEmoji(mk) }}</span>
+            </span>
+            <span class="task-title" @click="openEdit(t)">{{ t.title }}</span>
+            <span class="priority-tag"
+                  :class="'priority-'+t.priority">{{ priorityLabel(t.priority) }}</span>
+            <button class="task-del" @click="deleteTask(t)" title="删除">×</button>
+          </div>
+        </div>
+      </div>
+      <!-- AI 建议 -->
       <div class="ai-card">
         <div class="ai-card-header">
           <div class="avatar">💡</div>
@@ -818,8 +818,8 @@ const { createApp, ref, computed, onMounted, reactive } = Vue;
 // ===== All person keys & info =====
 const ALL_PEOPLE = {
   dad:    { name:'强哥', emoji:'👨' },
-  mom:    { name:'桃子', emoji:'👩' },
-  baby:   { name:'小宝', emoji:'🧒' },
+  mom:    { name:'桃子', emoji:'🍑' },
+  baby:   { name:'小宝', emoji:'👶🏻' },
   gpa:    { name:'外公', emoji:'👴' },
   gma:    { name:'外婆', emoji:'👵' },
   yeye:   { name:'爷爷', emoji:'👴' },
@@ -835,16 +835,16 @@ const MULTI_CARD = { key:'multi', name:'多人', emoji:'👥', color:'#9B59B6', 
 // Right column (top to bottom)
 const SOLO_CARDS = [
   { key:'dad',    name:'强哥', emoji:'👨', color:'#4A90D9', gradient:'linear-gradient(135deg,#4A90D9,#7AB8F5)', delay:'0s' },
-  { key:'mom',    name:'桃子', emoji:'👩', color:'#E8789A', gradient:'linear-gradient(135deg,#E8789A,#F4A5BB)', delay:'0.06s' },
-  { key:'baby',   name:'小宝', emoji:'🧒', color:'#67C23A', gradient:'linear-gradient(135deg,#67C23A,#95D475)', delay:'0.12s' },
+  { key:'mom',    name:'桃子', emoji:'🍑', color:'#E8789A', gradient:'linear-gradient(135deg,#E8789A,#F4A5BB)', delay:'0.06s' },
+  { key:'baby',   name:'小宝', emoji:'👶🏻', color:'#67C23A', gradient:'linear-gradient(135deg,#67C23A,#95D475)', delay:'0.12s' },
   { key:'family', name:'家人', emoji:'🏡', color:'#E6A23C', gradient:'linear-gradient(135deg,#E6A23C,#F0C78A)', delay:'0.18s' },
 ];
 
 // Form top-level chips
 const MAIN_CHIPS = [
   { key:'dad',    name:'强哥', emoji:'👨', color:'#4A90D9', type:'person' },
-  { key:'mom',    name:'桃子', emoji:'👩', color:'#E8789A', type:'person' },
-  { key:'baby',   name:'小宝', emoji:'🧒', color:'#67C23A', type:'person' },
+  { key:'mom',    name:'桃子', emoji:'🍑', color:'#E8789A', type:'person' },
+  { key:'baby',   name:'小宝', emoji:'👶🏻', color:'#67C23A', type:'person' },
   { key:'family', name:'家人', emoji:'🏡', color:'#E6A23C', type:'group'  },
 ];
 
@@ -872,7 +872,6 @@ createApp({
     const soloCards = SOLO_CARDS;
     const mainChips = MAIN_CHIPS;
     const familyElders = FAMILY_ELDERS;
-    const tab = ref('today');
     const tasks = ref([]);
     const showModal = ref(false);
     const showSettings = ref(false);
@@ -934,20 +933,22 @@ createApp({
     function personName(key){ return ALL_PEOPLE[key]?.name || key; }
     function personEmoji(key){ return ALL_PEOPLE[key]?.emoji || '👤'; }
 
-    // ===== Card task filtering =====
-    const currentTasks = computed(()=> tasks.value.filter(t=>{
-      const tt = getTaskType(t.deadline);
-      if(tab.value==='today') return tt==='today';
-      return tt==='week' || tt==='later';
-    }));
-    const doneCount = computed(()=> currentTasks.value.filter(t=>t.done).length);
+    // ===== Task filtering =====
+    const todayTasks = computed(()=> tasks.value.filter(t=> getTaskType(t.deadline)==='today'));
+    const weekTasks = computed(()=> tasks.value.filter(t=> getTaskType(t.deadline)==='week'));
+    const todayDone = computed(()=> todayTasks.value.filter(t=>t.done).length);
+    const todayProgress = computed(()=>{
+      if(!todayTasks.value.length) return 0;
+      return Math.round(todayDone.value / todayTasks.value.length * 100);
+    });
     const donePercent = computed(()=>{
-      if(!currentTasks.value.length) return 0;
-      return Math.round(doneCount.value / currentTasks.value.length * 100);
+      const all = [...todayTasks.value, ...weekTasks.value];
+      if(!all.length) return 0;
+      return Math.round(all.filter(t=>t.done).length / all.length * 100);
     });
 
     function cardTasks(cardKey){
-      return currentTasks.value.filter(t=>{
+      return weekTasks.value.filter(t=>{
         const m = Array.isArray(t.member) ? t.member : [t.member];
         if(cardKey==='multi') return m.length > 1;
         if(cardKey==='family') return m.length===1 && ELDER_KEYS.includes(m[0]);
@@ -1242,46 +1243,13 @@ createApp({
 
       form.deadline = todayISO.value;
 
-      if(!tasks.value.length){
-        const today = new Date();
-        const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-        const todayD = fmt(today);
-        const addDays = n => { const d=new Date(today); d.setDate(d.getDate()+n); return fmt(d); };
-        const sat = addDays((6-today.getDay()+7)%7||7);
-        const sun = addDays((7-today.getDay())%7||7);
-        const wed = addDays((3-today.getDay()+7)%7||7);
-        const nextWeek = addDays(8);
-
-        const demos = [
-          { member:['dad'],    title:'检查家里水电表',      deadline:todayD,   priority:'mid'  },
-          { member:['dad'],    title:'修理厨房水龙头',      deadline:wed,      priority:'high' },
-          { member:['mom'],    title:'准备晚餐食材',        deadline:todayD,   priority:'high' },
-          { member:['mom'],    title:'预约小宝体检',        deadline:wed,      priority:'mid'  },
-          { member:['baby'],   title:'完成数学作业',        deadline:todayD,   priority:'high' },
-          { member:['baby'],   title:'练习钢琴30分钟',     deadline:todayD,   priority:'mid'  },
-          { member:['baby'],   title:'整理书桌和书包',      deadline:sun,      priority:'low'  },
-          { member:['gpa'],    title:'早晨散步30分钟',     deadline:todayD,   priority:'mid'  },
-          { member:['gpa'],    title:'下午量血压',          deadline:todayD,   priority:'high' },
-          { member:['gma'],    title:'浇阳台的花',          deadline:todayD,   priority:'low'  },
-          { member:['nainai'], title:'整理换季衣物',        deadline:sat,      priority:'mid'  },
-          { member:['yeye'],   title:'下棋休闲放松',        deadline:sun,      priority:'low'  },
-          { member:['dad','mom','baby','gpa','gma','yeye','nainai'], title:'全家大扫除', deadline:sat, priority:'mid' },
-          { member:['mom','gma'],       title:'一起包饺子',     deadline:sun,      priority:'low'  },
-          { member:['dad','baby'],      title:'父子骑车锻炼',   deadline:sun,      priority:'low'  },
-          { member:['dad','gpa','yeye'], title:'去超市买米面油', deadline:nextWeek, priority:'low'  },
-        ];
-        tasks.value = demos.map((d,i)=>({
-          ...d, id: Date.now().toString(36)+i, note:'', done:false
-        }));
-        saveTasks();
-      }
     });
 
     return {
       multiCard, soloCards, mainChips, familyElders,
-      tab, tasks, showModal, showSettings, showFamilySub, editingId,
+      tasks, showModal, showSettings, showFamilySub, editingId,
       aiLoading, aiText, toast, config, form,
-      todayStr, todayISO, currentTasks, doneCount, donePercent,
+      todayStr, todayISO, weekTasks, todayTasks, todayDone, todayProgress, donePercent,
       cardTasks, cardDone, cardProgress, getTaskType,
       personName, personEmoji,
       priorityLabel, isOverdue, formatDeadline,
