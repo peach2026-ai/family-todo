@@ -1102,6 +1102,10 @@ const DEFAULT_SUGGESTIONS = [
 const STORAGE_KEY = 'family_butler_tasks_v2';
 const CONFIG_KEY  = 'family_butler_config';
 
+// Supabase 硬编码配置 — 所有设备自动同步
+const SUPABASE_URL = 'https://zgubxubqpkblrkgvomqo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_mmo05rQjonntpyytYXOMBA_qB5y017l';
+
 createApp({
   setup(){
     const multiCard = MULTI_CARD;
@@ -1303,14 +1307,15 @@ createApp({
     }
 
     function initSupabase(){
-      if(config.supabaseUrl && config.supabaseKey){
-        try{
-          supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
-          fetchFromSupabase();
-        }catch(e){
-          console.warn('Supabase init failed:', e);
-          supabase = null;
-        }
+      try{
+        const url = config.supabaseUrl || SUPABASE_URL;
+        const key = config.supabaseKey || SUPABASE_KEY;
+        if(!url || !key) return;
+        supabase = window.supabase.createClient(url, key);
+        fetchFromSupabase();
+      }catch(e){
+        console.warn('Supabase init failed:', e);
+        supabase = null;
       }
     }
 
@@ -1318,10 +1323,11 @@ createApp({
       if(!supabase) return;
       try{
         const { data, error } = await supabase.from('tasks').select('*');
-        if(!error && data && data.length){
+        if(error){ console.warn('Supabase fetch error:', error.message); return; }
+        if(data && data.length){
           tasks.value = data.map(d=>({
             id: d.id,
-            member: Array.isArray(d.member) ? d.member : [d.member],
+            member: Array.isArray(d.member) ? d.member : (d.member ? [d.member] : ['dad']),
             title: d.title,
             priority: d.priority || 'mid',
             deadline: d.deadline || todayISO.value,
@@ -1329,6 +1335,8 @@ createApp({
             done: !!d.done,
           }));
           localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks.value));
+        } else if(data && data.length===0 && tasks.value.length){
+          await syncToSupabase();
         }
       }catch(e){ console.warn('Supabase fetch error:', e); }
     }
