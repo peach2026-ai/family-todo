@@ -669,7 +669,7 @@ body{
   <header class="top-nav">
     <h1>🏠 家庭贴心管家</h1>
     <div class="nav-stats">
-      <span class="stat">本周<strong>{{ weekTasks.length }}</strong></span>
+      <span class="stat">全部<strong>{{ tasks.length }}</strong></span>
       <span class="stat">今日<strong>{{ todayTasks.length }}</strong></span>
       <span class="stat">完成率<strong>{{ donePercent }}%</strong></span>
       <span class="date">📅 {{ todayStr }}</span>
@@ -727,6 +727,7 @@ body{
             <span class="task-members">
               <span class="member-avatar-mini" v-for="mk in t.member" :key="mk" :title="personName(mk)">{{ personEmoji(mk) }}</span>
             </span>
+            <span v-if="getTaskType(t.deadline)==='later'" class="future-tag">以后</span>
             <span v-if="t.deadline" class="task-deadline" :class="{overdue:isOverdue(t)}">
               {{ formatDeadline(t.deadline) }}
             </span>
@@ -758,6 +759,7 @@ body{
             <div class="task-check" :class="{checked:t.done}" @click="toggleTask(t)"></div>
             <span class="task-title" @click="openEdit(t)">{{ t.title }}</span>
             <span v-if="c.key==='family'" class="elder-tag">{{ personName(t.member[0]) }}</span>
+            <span v-if="getTaskType(t.deadline)==='later'" class="future-tag">以后</span>
             <span v-if="t.deadline" class="task-deadline" :class="{overdue:isOverdue(t)}">
               {{ formatDeadline(t.deadline) }}
             </span>
@@ -1168,7 +1170,9 @@ createApp({
     function personEmoji(key){ return ALL_PEOPLE[key]?.emoji || '👤'; }
 
     // ===== Task filtering =====
-    const todayTasks = computed(()=> tasks.value.filter(t=> getTaskType(t.deadline)==='today'));
+    const sortByDeadline = (a,b)=> (a.deadline||'').localeCompare(b.deadline||'');
+    const todayTasks = computed(()=> tasks.value.filter(t=> getTaskType(t.deadline)==='today').sort(sortByDeadline));
+    const nonTodayTasks = computed(()=> tasks.value.filter(t=> getTaskType(t.deadline)!=='today').sort(sortByDeadline));
     const weekTasks = computed(()=> tasks.value.filter(t=> getTaskType(t.deadline)==='week'));
     const todayDone = computed(()=> todayTasks.value.filter(t=>t.done).length);
     const todayProgress = computed(()=>{
@@ -1176,13 +1180,12 @@ createApp({
       return Math.round(todayDone.value / todayTasks.value.length * 100);
     });
     const donePercent = computed(()=>{
-      const all = [...todayTasks.value, ...weekTasks.value];
-      if(!all.length) return 0;
-      return Math.round(all.filter(t=>t.done).length / all.length * 100);
+      if(!tasks.value.length) return 0;
+      return Math.round(tasks.value.filter(t=>t.done).length / tasks.value.length * 100);
     });
 
     function cardTasks(cardKey){
-      return weekTasks.value.filter(t=>{
+      return nonTodayTasks.value.filter(t=>{
         const m = Array.isArray(t.member) ? t.member : [t.member];
         if(cardKey==='multi') return m.length > 1;
         if(cardKey==='family') return m.length===1 && ELDER_KEYS.includes(m[0]);
