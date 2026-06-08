@@ -554,7 +554,7 @@ body{
 
 /* ===== View All Button in card header ===== */
 .card-header .view-btn{
-  margin-left:auto;font-size:11px;padding:3px 10px;border-radius:10px;
+  font-size:11px;padding:3px 10px;border-radius:10px;margin-left:6px;
   background:rgba(255,255,255,.25);border:none;color:#fff;cursor:pointer;font-weight:600;z-index:1;
 }
 .card-header .view-btn:hover{background:rgba(255,255,255,.4)}
@@ -712,8 +712,8 @@ body{
         <div class="card-header" style="background:linear-gradient(135deg,#FF6B6B,#FFA07A)">
           <div class="avatar">📋</div>
           <span class="name">今日任务</span>
-          <button class="view-btn" @click="openCardView('today','今日任务','linear-gradient(135deg,#FF6B6B,#FFA07A)')">查看</button>
           <span class="progress-text">{{ todayDone }}/{{ todayTasks.length }}</span>
+          <button class="view-btn" @click="openCardView('today','今日任务','linear-gradient(135deg,#FF6B6B,#FFA07A)')">查看</button>
         </div>
         <div class="progress-bar-wrap">
           <div class="progress-bar-fill"
@@ -740,8 +740,8 @@ body{
         <div class="card-header" :style="{background: multiCard.gradient}">
           <div class="avatar">{{ multiCard.emoji }}</div>
           <span class="name">{{ multiCard.name }}</span>
-          <button class="view-btn" @click="openCardView('multi',multiCard.name,multiCard.gradient)">查看</button>
           <span class="progress-text">{{ cardDone('multi') }}/{{ cardTasks('multi').length }}</span>
+          <button class="view-btn" @click="openCardView('multi',multiCard.name,multiCard.gradient)">查看</button>
         </div>
         <div class="progress-bar-wrap">
           <div class="progress-bar-fill"
@@ -776,8 +776,8 @@ body{
         <div class="card-header" :style="{background: c.gradient}">
           <div class="avatar">{{ c.emoji }}</div>
           <span class="name">{{ c.name }}</span>
-          <button class="view-btn" @click="openCardView(c.key,c.name,c.gradient)">查看</button>
           <span class="progress-text">{{ cardDone(c.key) }}/{{ cardTasks(c.key).length }}</span>
+          <button class="view-btn" @click="openCardView(c.key,c.name,c.gradient)">查看</button>
         </div>
         <div class="progress-bar-wrap">
           <div class="progress-bar-fill"
@@ -1247,7 +1247,8 @@ createApp({
     const sortDoneDesc = (a,b)=> (b.done_at||'').localeCompare(a.done_at||'');
 
     function isDoneRecent(t){
-      if(!t.done || !t.done_at) return false;
+      if(!t.done) return false;
+      if(!t.done_at) return true;
       return (Date.now() - new Date(t.done_at).getTime()) < SEVEN_DAYS;
     }
 
