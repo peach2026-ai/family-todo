@@ -1,0 +1,15 @@
+{
+  "functions": {
+    "api/recognize-item.js": {
+      "maxDuration": 30
+    },
+    "api/suggestion.js": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    { "source": "/api/recognize-item", "destination": "/api/recognize-item" },
+    { "source": "/api/suggestion", "destination": "/api/suggestion" },
+    { "source": "/api/health", "destination": "/api/health" }
+  ]
+}

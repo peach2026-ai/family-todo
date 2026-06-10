@@ -5,7 +5,7 @@ const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
-const PORT = 3000;
+const PORT = 3001;
 
 // ===== 配置 =====
 const SUPABASE_URL = 'https://zgubxubqpkblrkgvomqo.supabase.co';

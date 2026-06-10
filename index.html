@@ -1549,7 +1549,7 @@ createApp({
     }
 
     // ===== AI Suggestion =====
-    const BACKEND_URL = 'http://localhost:3000';
+    const BACKEND_URL = location.hostname === 'localhost' ? 'http://localhost:3001' : '';
 
     async function fetchAiSuggestion(){
       const allTasks=[...todayTasks.value,...weekTasks.value].filter(t=>!t.done);
