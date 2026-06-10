@@ -1,15 +1,11 @@
 {
+  "regions": ["hkg1"],
   "functions": {
     "api/recognize-item.js": {
-      "maxDuration": 30
+      "maxDuration": 60
     },
     "api/suggestion.js": {
-      "maxDuration": 30
+      "maxDuration": 60
     }
-  },
-  "rewrites": [
-    { "source": "/api/recognize-item", "destination": "/api/recognize-item" },
-    { "source": "/api/suggestion", "destination": "/api/suggestion" },
-    { "source": "/api/health", "destination": "/api/health" }
-  ]
+  }
 }
