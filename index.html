@@ -1060,7 +1060,7 @@ body{
           </div>
           <div class="recognize-status loading" v-if="itemRecognizing">🔍 AI识别中... 正在分析图片</div>
           <div class="recognize-status success" v-if="recognizeStatus==='success'">✅ AI识别完成，请确认以下信息是否正确</div>
-          <div class="recognize-status error" v-if="recognizeStatus==='error'">❌ 识别失败，请手动填写或换清晰的图片重试</div>
+          <div class="recognize-status error" v-if="recognizeStatus.startsWith && recognizeStatus.startsWith('error')">❌ {{recognizeStatus.slice(5) || '识别失败，请手动填写或换清晰的图片重试'}}</div>
         </div>
         <!-- Form fields -->
         <div class="form-group">
@@ -1841,6 +1841,18 @@ createApp({
           body:JSON.stringify({images:itemForm.images})
         });
         const data=await res.json();
+        if(!res.ok){
+          recognizeStatus.value='error:HTTP '+res.status+' - 服务端错误';
+          itemRecognizing.value=false;
+          return;
+        }
+        const text=await res.text();
+        let data;
+        try{ data=JSON.parse(text); }catch(e){
+          recognizeStatus.value='error:返回非JSON: '+text.slice(0,100);
+          itemRecognizing.value=false;
+          return;
+        }
         if(data.success && data.result){
           const r=data.result;
           const normDate=(d)=>d?d.replace(/\//g,'-').replace(/\./g,'-'):null;
@@ -1849,7 +1861,6 @@ createApp({
           let pDate=normDate(r.production_date);
           let eDate=normDate(r.expiry_date);
           let sDays=r.shelf_life_days?Number(r.shelf_life_days):null;
-          // 推算缺失字段
           if(pDate && sDays && !eDate){
             const d=new Date(pDate+'T00:00:00');
             d.setDate(d.getDate()+sDays);
@@ -1859,19 +1870,17 @@ createApp({
             const d1=new Date(pDate+'T00:00:00'), d2=new Date(eDate+'T00:00:00');
             sDays=Math.round((d2-d1)/(1000*60*60*24));
           }
-          // 填入表单
           if(pDate) itemForm.production_date=pDate;
           if(sDays) itemForm.shelf_life_days=sDays;
           if(eDate) itemForm.expiry_date=eDate;
-          // 选择模式：有过期日期就用直接模式展示
           itemDateMode.value = eDate ? 'direct' : 'calc';
           recognizeStatus.value='success';
         } else {
-          recognizeStatus.value='error';
+          recognizeStatus.value='error:'+(data.error||'识别失败，请手动填写或换清晰的图片重试');
         }
       }catch(err){
         console.warn('AI识别失败:',err);
-        recognizeStatus.value='error';
+        recognizeStatus.value='error:'+err.message;
       }
       itemRecognizing.value=false;
     }
