@@ -1060,7 +1060,7 @@ body{
           </div>
           <div class="recognize-status loading" v-if="itemRecognizing">🔍 AI识别中... 正在分析图片</div>
           <div class="recognize-status success" v-if="recognizeStatus==='success'">✅ AI识别完成，请确认以下信息是否正确</div>
-          <div class="recognize-status error" v-if="recognizeStatus.startsWith && recognizeStatus.startsWith('error')">❌ {{recognizeStatus.slice(5) || '识别失败，请手动填写或换清晰的图片重试'}}</div>
+          <div class="recognize-status error" v-if="recognizeError">❌ {{recognizeError}}</div>
         </div>
         <!-- Form fields -->
         <div class="form-group">
@@ -1611,6 +1611,12 @@ createApp({
     const itemCategories = ['食品','药品','化妆品','保健品','日用品','其他'];
 
     const recognizeStatus = ref('');
+    const recognizeError = computed(()=>{
+      const s=recognizeStatus.value;
+      if(typeof s==='string' && s.startsWith('error:')) return s.slice(6);
+      if(s==='error') return '识别失败，请手动填写或换清晰的图片重试';
+      return '';
+    });
     const itemForm = reactive({
       name:'', category:'食品', production_date:'', shelf_life_days:'',
       expiry_date:'', images:[], note:''
@@ -1840,7 +1846,6 @@ createApp({
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({images:itemForm.images})
         });
-        const data=await res.json();
         if(!res.ok){
           recognizeStatus.value='error:HTTP '+res.status+' - 服务端错误';
           itemRecognizing.value=false;
@@ -1911,7 +1916,7 @@ createApp({
       saveConfig, fetchAiSuggestion, showToast,
       // Items
       items, showItemsPage, showItemModal, editingItemId,
-      itemTab, itemDateMode, itemRecognizing, recognizeStatus, itemCategories, itemForm,
+      itemTab, itemDateMode, itemRecognizing, recognizeStatus, recognizeError, itemCategories, itemForm,
       calcExpiry, itemFinalExpiry, expiryAlerts, itemsGrouped,
       daysUntilExpiry, expiryLevel, expiryText, expiryDaysLabel, expiryColor, categoryEmoji,
       openAddItem, openEditItem, saveItem, deleteItem, handleItemImages, removeItemImage,
