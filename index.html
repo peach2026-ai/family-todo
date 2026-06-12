@@ -2014,6 +2014,9 @@ createApp({
       initSupabase();
 
       form.deadline = todayISO.value;
+
+      // 页面加载时自动获取管家建议
+      fetchAiSuggestion();
     });
 
     return {
