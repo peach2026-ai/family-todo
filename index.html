@@ -11,15 +11,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ===== 主要改动点 =====
- * 1. 深紫蓝渐变背景 + CSS Variables 主题色管理
- * 2. 顶部导航毛玻璃效果(backdrop-filter)
- * 3. 成员卡片大圆角24px + 紫调阴影 + 每人独立渐变头
- * 4. 头像白底衬托放大，任务列表hover浅紫
+ * 1. 浅色渐变背景 (浅紫→浅粉→浅蓝)
+ * 2. 顶部导航浅紫渐变 + 白色文字
+ * 3. SVG 线性图标替代 emoji 头像 (Lucide 风格)
+ * 4. 成员卡片大圆角24px + 紫调阴影 + 每人独立渐变头
  * 5. 复选框弹性动画 + 删除按钮hover显示
- * 6. FAB加大60px + 悬浮阴影 + hover上浮
- * 7. 引入Nunito圆润字体
- * 8. 优先级改为彩色小圆点
- * 9. 物品管理/AI建议/Toast/Modal 统一紫调风格
+ * 6. FAB加大 + 悬浮阴影 + hover上浮
+ * 7. Nunito 圆润字体 + CSS Variables 主题色
  * ================================ */
 
 /* ===== Reset & Variables ===== */
@@ -38,7 +36,7 @@
 }
 body{
   font-family:'Nunito','PingFang SC','Microsoft YaHei',-apple-system,BlinkMacSystemFont,sans-serif;
-  background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+  background:linear-gradient(135deg, #f0eeff 0%, #fce4f3 50%, #e8f4fd 100%);
   background-attachment:fixed;
   color:var(--text-primary);
   min-height:100vh;
@@ -47,16 +45,14 @@ body{
 }
 h1,h2,h3,.name{font-weight:700}
 
-/* ===== Top Nav (Glassmorphism) ===== */
+/* ===== Top Nav ===== */
 .top-nav{
   position:sticky;top:0;z-index:100;
-  background:rgba(91,79,207,0.35);
-  backdrop-filter:blur(20px) saturate(180%);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  background:linear-gradient(90deg, #c4b5fd, #a78bfa);
   padding:20px 20px 24px;
   display:flex;align-items:center;justify-content:space-between;
   flex-wrap:wrap;gap:12px;
-  border-bottom:1px solid rgba(255,255,255,0.1);
+  box-shadow:0 4px 20px rgba(167,139,250,0.25);
 }
 .top-nav::after{display:none}
 .top-nav h1{
@@ -142,6 +138,7 @@ h1,h2,h3,.name{font-weight:700}
   flex-shrink:0;
   box-shadow:0 2px 8px rgba(0,0,0,0.1);
 }
+.avatar svg{width:26px;height:26px;stroke:#fff;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .card-header .name{
   font-size:18px;font-weight:700;letter-spacing:.3px;
   color:#fff;
@@ -578,16 +575,17 @@ h1,h2,h3,.name{font-weight:700}
 
 /* ===== Multi-member avatars in task ===== */
 .task-members{
-  display:flex;gap:2px;
+  display:flex;gap:3px;
   flex-shrink:0;
 }
 .member-avatar-mini{
   width:22px;height:22px;
   border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:11px;
-  background:#F5F3FF;
+  font-size:11px;font-weight:700;color:#fff;
+  flex-shrink:0;
 }
+.member-avatar-mini svg{width:13px;height:13px;stroke:#fff;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
 /* ===== Elder tag in family card ===== */
 .elder-tag{
@@ -628,7 +626,7 @@ h1,h2,h3,.name{font-weight:700}
 /* ===== Task History Overlay ===== */
 .history-overlay{
   position:fixed;inset:0;z-index:250;
-  background:linear-gradient(180deg,#764ba2 0%,#667eea 100%);
+  background:linear-gradient(180deg,#c4b5fd 0%,#a78bfa 100%);
   display:flex;flex-direction:column;animation:fadeIn .3s ease;overflow:hidden;
 }
 .history-header{
@@ -702,7 +700,7 @@ h1,h2,h3,.name{font-weight:700}
 /* ===== Items Fullscreen Overlay ===== */
 .items-overlay{
   position:fixed;inset:0;z-index:250;
-  background:linear-gradient(180deg,#6BCB77 0%,#667eea 30%,#764ba2 100%);
+  background:linear-gradient(180deg,#86efac 0%,#c4b5fd 30%,#a78bfa 100%);
   display:flex;flex-direction:column;animation:fadeIn .3s ease;overflow:hidden;
 }
 .items-header{
@@ -822,7 +820,7 @@ h1,h2,h3,.name{font-weight:700}
       <!-- 今日任务 -->
       <div class="member-card today-card" v-if="todayTasks.length">
         <div class="card-header" style="background:linear-gradient(135deg,#5B4FCF,#8B7FE8);--card-accent:#5B4FCF">
-          <div class="avatar" style="font-size:18px">今</div>
+          <div class="avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></div>
           <span class="name">今日任务</span>
           <span class="progress-text">{{ todayDone }}/{{ todayTasks.length }}</span>
           <button class="view-btn" @click="openCardView('today','今日任务','linear-gradient(135deg,#5B4FCF,#8B7FE8)')">查看</button>
@@ -837,7 +835,7 @@ h1,h2,h3,.name{font-weight:700}
                v-for="t in todayTasks" :key="t.id">
             <div class="task-check" :class="{checked:t.done}" @click="toggleTask(t)"></div>
             <span class="task-members">
-              <span class="member-avatar-mini" v-for="mk in t.member" :key="mk" :title="personName(mk)">{{ personEmoji(mk) }}</span>
+              <span class="member-avatar-mini" v-for="mk in t.member" :key="mk" :title="personName(mk)" :style="{background: personColor(mk)}">{{ personName(mk).charAt(0) }}</span>
             </span>
             <span class="task-title" @click="openEdit(t)">{{ t.title }}</span>
             <span v-if="t.done_at" class="done-at">{{ formatDoneAt(t.done_at) }}</span>
@@ -850,7 +848,7 @@ h1,h2,h3,.name{font-weight:700}
       <!-- 多人任务 -->
       <div class="member-card" style="animation-delay:.06s">
         <div class="card-header" :style="{background: multiCard.gradient, '--card-accent': multiCard.color}">
-          <div class="avatar">{{ multiCard.emoji }}</div>
+          <div class="avatar"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
           <span class="name">{{ multiCard.name }}</span>
           <span class="progress-text">{{ cardDone('multi') }}/{{ cardTasks('multi').length }}</span>
           <button class="view-btn" @click="openCardView('multi',multiCard.name,multiCard.gradient)">查看</button>
@@ -866,7 +864,7 @@ h1,h2,h3,.name{font-weight:700}
             <div class="task-check" :class="{checked:t.done}" @click="toggleTask(t)"></div>
             <span class="task-title" @click="openEdit(t)">{{ t.title }}</span>
             <span class="task-members">
-              <span class="member-avatar-mini" v-for="mk in t.member" :key="mk" :title="personName(mk)">{{ personEmoji(mk) }}</span>
+              <span class="member-avatar-mini" v-for="mk in t.member" :key="mk" :title="personName(mk)" :style="{background: personColor(mk)}">{{ personName(mk).charAt(0) }}</span>
             </span>
             <span v-if="getTaskType(t.deadline)==='later'" class="future-tag">以后</span>
             <span v-if="t.done_at" class="done-at">{{ formatDoneAt(t.done_at) }}</span>
@@ -886,7 +884,7 @@ h1,h2,h3,.name{font-weight:700}
       <div class="member-card" v-for="c in soloCards" :key="c.key"
            :style="{'animation-delay': c.delay}">
         <div class="card-header" :style="{background: c.gradient, '--card-accent': c.color}">
-          <div class="avatar">{{ c.emoji }}</div>
+          <div class="avatar"><svg v-if="c.key==='baby'" viewBox="0 0 24 24"><path d="M9 12h.01M15 12h.01M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5"/><path d="M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.6 0-1-.5-.9-1.1.2-1-.7-1.9-1.6-1.9-1 0-2.1.8-2.1 2.3 0 1 .7 2.4 2.1 3.2"/></svg><svg v-else viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
           <span class="name">{{ c.name }}</span>
           <span class="progress-text">{{ cardDone(c.key) }}/{{ cardTasks(c.key).length }}</span>
           <button class="view-btn" @click="openCardView(c.key,c.name,c.gradient)">查看</button>
@@ -920,7 +918,7 @@ h1,h2,h3,.name{font-weight:700}
       <!-- 物品过期提醒 -->
       <div class="expiry-card" v-if="expiryAlerts.length">
         <div class="card-header">
-          <div class="avatar" style="font-size:18px">期</div>
+          <div class="avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
           <span class="name">物品过期提醒</span>
           <button class="view-all-btn" @click="showItemsPage=true">查看全部</button>
         </div>
@@ -941,7 +939,7 @@ h1,h2,h3,.name{font-weight:700}
       <!-- 无提醒时的占位 -->
       <div class="expiry-card" v-else>
         <div class="card-header">
-          <div class="avatar" style="font-size:18px">期</div>
+          <div class="avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
           <span class="name">物品过期提醒</span>
           <button class="view-all-btn" @click="showItemsPage=true">查看全部</button>
         </div>
@@ -950,7 +948,7 @@ h1,h2,h3,.name{font-weight:700}
       <!-- 管家建议 -->
       <div class="ai-card">
         <div class="ai-card-header">
-          <div class="avatar" style="font-size:18px">荐</div>
+          <div class="avatar"><svg viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/></svg></div>
           <span class="name">管家建议</span>
         </div>
         <div class="ai-card-body">
@@ -1088,7 +1086,7 @@ h1,h2,h3,.name{font-weight:700}
           <div class="task-check" :class="{checked:t.done}" @click="toggleTask(t)"></div>
           <span class="task-title" @click="openEdit(t)">{{ t.title }}</span>
           <span class="task-members" v-if="viewingCard.key==='multi'||viewingCard.key==='today'">
-            <span class="member-avatar-mini" v-for="mk in t.member" :key="mk">{{ personEmoji(mk) }}</span>
+            <span class="member-avatar-mini" v-for="mk in t.member" :key="mk" :style="{background: personColor(mk)}">{{ personName(mk).charAt(0) }}</span>
           </span>
           <span v-if="viewingCard.key==='family'" class="elder-tag">{{ personName(t.member[0]) }}</span>
           <span v-if="getTaskType(t.deadline)==='later'" class="future-tag">以后</span>
@@ -1103,7 +1101,7 @@ h1,h2,h3,.name{font-weight:700}
           <div class="task-check checked" @click="toggleTask(t)"></div>
           <span class="task-title" @click="openEdit(t)">{{ t.title }}</span>
           <span class="task-members" v-if="viewingCard.key==='multi'||viewingCard.key==='today'">
-            <span class="member-avatar-mini" v-for="mk in t.member" :key="mk">{{ personEmoji(mk) }}</span>
+            <span class="member-avatar-mini" v-for="mk in t.member" :key="mk" :style="{background: personColor(mk)}">{{ personName(mk).charAt(0) }}</span>
           </span>
           <span v-if="viewingCard.key==='family'" class="elder-tag">{{ personName(t.member[0]) }}</span>
           <span class="done-at" v-if="t.done_at">{{ formatDoneAt(t.done_at) }}</span>
@@ -1350,6 +1348,8 @@ createApp({
     // ===== Person helpers =====
     function personName(key){ return ALL_PEOPLE[key]?.name || key; }
     function personEmoji(key){ return ALL_PEOPLE[key]?.emoji || '👤'; }
+    const MEMBER_COLORS = {dad:'#ef4444',mom:'#ec4899',baby:'#059669',gpa:'#a78bfa',gma:'#a78bfa',yeye:'#a78bfa',nainai:'#a78bfa'};
+    function personColor(key){ return MEMBER_COLORS[key] || '#8B7FE8'; }
 
     // ===== Task filtering =====
     const SEVEN_DAYS = 7*24*60*60*1000;
@@ -2020,7 +2020,7 @@ createApp({
       todayStr, todayISO, weekTasks, todayTasks, todayDone, todayProgress, donePercent,
       cardTasks, cardDone, cardProgress, getTaskType,
       viewingCard, openCardView, allCardTasks, formatDoneAt,
-      personName, personEmoji,
+      personName, personEmoji, personColor,
       priorityLabel, isOverdue, formatDeadline,
       isAllSelected, isChipSelected, toggleChip, toggleElderChip, toggleAll,
       deadlinePreviewType, deadlinePreviewText,
