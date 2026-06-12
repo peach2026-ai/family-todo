@@ -718,7 +718,7 @@ h1,h2,h3,.name{font-weight:600}
     <!-- Col 1: 今日任务 + 多人任务 -->
     <div class="col-left">
       <!-- 今日任务 -->
-      <div class="member-card today-card">
+      <div class="member-card today-card" v-if="todayTasks.length">
         <div class="card-header" style="background:linear-gradient(135deg,#FF8C69,#FFB347)">
           <div class="avatar" style="font-size:16px">今</div>
           <span class="name">今日任务</span>
@@ -1876,6 +1876,10 @@ createApp({
           let pDate=normDate(r.production_date);
           let eDate=normDate(r.expiry_date);
           let sDays=r.shelf_life_days?Number(r.shelf_life_days):null;
+          // 化妆品只有一个日期时，视为过期日期
+          if(itemForm.category==='化妆品' && pDate && !eDate && !sDays){
+            eDate=pDate; pDate=null;
+          }
           if(pDate && sDays && !eDate){
             const d=new Date(pDate+'T00:00:00');
             d.setDate(d.getDate()+sDays);
