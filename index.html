@@ -8,39 +8,76 @@
 <script>window.Vue||document.write('<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"><\/script>')</script>
 <script src="https://cdn.bootcdn.net/ajax/libs/supabase/2.49.1/umd/supabase.min.js"></script>
 <script>window.supabase||document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>')</script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* ===== Reset & Base ===== */
+/* ===== 主要改动点 =====
+ * 1. 深紫蓝渐变背景 + CSS Variables 主题色管理
+ * 2. 顶部导航毛玻璃效果(backdrop-filter)
+ * 3. 成员卡片大圆角24px + 紫调阴影 + 每人独立渐变头
+ * 4. 头像白底衬托放大，任务列表hover浅紫
+ * 5. 复选框弹性动画 + 删除按钮hover显示
+ * 6. FAB加大60px + 悬浮阴影 + hover上浮
+ * 7. 引入Nunito圆润字体
+ * 8. 优先级改为彩色小圆点
+ * 9. 物品管理/AI建议/Toast/Modal 统一紫调风格
+ * ================================ */
+
+/* ===== Reset & Variables ===== */
 *{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --primary:#5B4FCF;
+  --primary-light:#8B7FE8;
+  --primary-soft:#F5F3FF;
+  --accent-pink:#FF6B9D;
+  --accent-yellow:#FFD93D;
+  --accent-green:#6BCB77;
+  --card-bg:#FFFFFF;
+  --text-primary:#2D2A5E;
+  --text-secondary:#8B8BAE;
+  --shadow-card:0 8px 32px rgba(91,79,207,0.12);
+}
 body{
-  font-family:'PingFang SC','Microsoft YaHei',-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:#F5F0E8;
-  color:#4A4A4A;
+  font-family:'Nunito','PingFang SC','Microsoft YaHei',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+  background-attachment:fixed;
+  color:var(--text-primary);
   min-height:100vh;
   font-weight:400;
   line-height:1.6;
 }
-h1,h2,h3,.name{font-weight:600}
+h1,h2,h3,.name{font-weight:700}
 
-/* ===== Top Nav ===== */
+/* ===== Top Nav (Glassmorphism) ===== */
 .top-nav{
   position:sticky;top:0;z-index:100;
-  background:linear-gradient(135deg,#F4B9A8 0%,#F8D5C4 100%);
-  padding:20px 20px 32px;
+  background:rgba(91,79,207,0.35);
+  backdrop-filter:blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  padding:20px 20px 24px;
   display:flex;align-items:center;justify-content:space-between;
   flex-wrap:wrap;gap:12px;
-  position:relative;
+  border-bottom:1px solid rgba(255,255,255,0.1);
 }
-.top-nav::after{
-  content:'';position:absolute;bottom:-1px;left:0;right:0;height:20px;
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 60'%3E%3Cpath fill='%23F5F0E8' d='M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z'/%3E%3C/svg%3E");
-  background-size:100% 100%;
-  pointer-events:none;
+.top-nav::after{display:none}
+.top-nav h1{
+  font-size:22px;color:#fff;letter-spacing:.5px;
+  font-weight:800;
+  text-shadow:0 2px 8px rgba(0,0,0,0.15);
 }
-.top-nav h1{font-size:20px;color:#fff;letter-spacing:.5px}
-.top-nav .nav-stats{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.top-nav .stat{font-size:12px;color:rgba(255,255,255,.9)}
-.top-nav .stat strong{color:#fff;font-size:14px;margin-left:2px}
-.top-nav .date{font-size:13px;color:rgba(255,255,255,.95);background:rgba(255,255,255,.2);padding:5px 14px;border-radius:20px}
+.top-nav .nav-stats{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.top-nav .stat{
+  font-size:12px;color:rgba(255,255,255,.85);
+  background:rgba(255,255,255,0.15);
+  padding:5px 14px;
+  border-radius:50px;
+  backdrop-filter:blur(10px);
+}
+.top-nav .stat strong{color:#fff;font-size:14px;margin-left:3px;font-weight:700}
+.top-nav .date{
+  font-size:12px;color:rgba(255,255,255,.8);
+  background:rgba(255,255,255,0.12);
+  padding:5px 14px;border-radius:50px;
+}
 .top-nav .nav-settings{display:none}
 
 /* ===== Today Card ===== */
@@ -48,14 +85,14 @@ h1,h2,h3,.name{font-weight:600}
 
 /* ===== Layout ===== */
 .main-layout{
-  padding:20px 16px;
+  padding:24px 16px 80px;
   max-width:480px;
   margin:0 auto;
 }
 .col-left,.col-mid,.col-right{
   display:flex;
   flex-direction:column;
-  gap:20px;
+  gap:22px;
 }
 .col-right>.ai-card{flex:1;display:flex;flex-direction:column}
 .ai-card-body{
@@ -66,242 +103,271 @@ h1,h2,h3,.name{font-weight:600}
 
 /* ===== Member Card ===== */
 .member-card{
-  background:#FFFFFF;
-  border-radius:18px;
+  background:var(--card-bg);
+  border-radius:24px;
   overflow:hidden;
-  box-shadow:0 2px 12px rgba(0,0,0,0.04);
-  transition:all .3s ease;
-  animation:fadeInUp .4s ease both;
+  box-shadow:var(--shadow-card);
+  transition:all .35s cubic-bezier(.4,0,.2,1);
+  animation:fadeInUp .5s ease both;
   margin-bottom:0;
 }
 .member-card:hover{
-  transform:translateY(-2px);
-  box-shadow:0 6px 20px rgba(0,0,0,0.08);
+  transform:translateY(-4px);
+  box-shadow:0 12px 40px rgba(91,79,207,0.18);
 }
 @keyframes fadeInUp{
-  from{opacity:0;transform:translateY(20px)}
+  from{opacity:0;transform:translateY(24px)}
   to{opacity:1;transform:translateY(0)}
 }
 
 .card-header{
-  padding:18px 20px;
-  display:flex;align-items:center;gap:12px;
+  padding:20px 22px;
+  display:flex;align-items:center;gap:14px;
   color:#fff;
   position:relative;
   overflow:hidden;
 }
 .card-header::after{
-  content:'';position:absolute;top:-50%;right:-20%;
-  width:100px;height:100px;
-  background:rgba(255,255,255,.08);
+  content:'';position:absolute;top:-30%;right:-15%;
+  width:120px;height:120px;
+  background:rgba(255,255,255,.1);
   border-radius:50%;
 }
 .avatar{
-  width:44px;height:44px;
-  background:rgba(255,255,255,.25);
+  width:50px;height:50px;
+  background:rgba(255,255,255,.3);
   border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:24px;
+  font-size:26px;
   flex-shrink:0;
+  box-shadow:0 2px 8px rgba(0,0,0,0.1);
 }
-.card-header .name{font-size:17px;font-weight:600;letter-spacing:.3px}
+.card-header .name{
+  font-size:18px;font-weight:700;letter-spacing:.3px;
+  color:#fff;
+}
 .card-header .progress-text{
   margin-left:auto;
-  font-size:13px;
-  opacity:.9;
+  font-size:20px;
+  font-weight:800;
+  color:#fff;
   z-index:1;
+  text-shadow:0 1px 4px rgba(0,0,0,0.15);
 }
 
 /* ===== Progress Bar ===== */
 .progress-bar-wrap{
-  height:3px;background:rgba(0,0,0,.05);
+  height:4px;background:rgba(91,79,207,.06);
 }
 .progress-bar-fill{
   height:100%;
-  transition:width .5s cubic-bezier(.4,0,.2,1);
-  border-radius:0 2px 2px 0;
+  transition:width .6s cubic-bezier(.4,0,.2,1);
+  border-radius:0 4px 4px 0;
 }
 
 /* ===== Task List ===== */
 .task-list{
-  padding:16px 18px;
+  padding:14px 16px;
   min-height:60px;
 }
 .task-item{
-  display:flex;align-items:center;gap:12px;
-  padding:14px 16px;
-  border-radius:14px;
-  margin-bottom:10px;
-  transition:all .25s;
-  background:#FAFAFA;
-  animation:fadeInUp .3s ease both;
+  --card-accent:var(--primary);
+  display:flex;align-items:center;gap:10px;
+  padding:13px 14px;
+  border-radius:16px;
+  margin-bottom:8px;
+  transition:all .25s ease;
+  background:#fff;
+  animation:fadeInUp .35s ease both;
 }
 .task-item:last-child{margin-bottom:0}
-.task-item:hover{background:#F5F5F5}
+.task-item:hover{background:var(--primary-soft)}
+.task-item:hover .task-del{opacity:1}
 @keyframes fadeInUp{
-  from{opacity:0;transform:translateY(10px)}
+  from{opacity:0;transform:translateY(12px)}
   to{opacity:1;transform:translateY(0)}
 }
 
-.task-item.done{opacity:.55}
-.task-item.done .task-title{text-decoration:line-through;color:#B0B0B0}
+.task-item.done{opacity:.5;background:#F8F8FC}
+.task-item.done .task-title{text-decoration:line-through;color:var(--text-secondary)}
 
 /* Checkbox */
 .task-check{
-  width:22px;height:22px;
+  width:24px;height:24px;
   border-radius:50%;
-  border:2px solid #D8D8D8;
+  border:2.5px solid #D8D8E8;
   cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  transition:all .25s;
+  transition:all .2s cubic-bezier(.4,0,.2,1);
   flex-shrink:0;
   background:#fff;
 }
-.task-check:hover{border-color:#B0B0B0}
+.task-check:hover{border-color:var(--card-accent);transform:scale(1.08)}
 .task-check.checked{
-  background:#E8A89C;
-  border-color:#E8A89C;
+  background:var(--card-accent);
+  border-color:var(--card-accent);
+  animation:checkBounce .4s cubic-bezier(.68,-.55,.27,1.55);
 }
 .task-check.checked::after{
-  content:'✓';color:#fff;font-size:13px;font-weight:700;
+  content:'✓';color:#fff;font-size:13px;font-weight:800;
+}
+@keyframes checkBounce{
+  0%{transform:scale(.8)}
+  50%{transform:scale(1.25)}
+  100%{transform:scale(1)}
 }
 
 .task-title{
   flex:1;font-size:14px;line-height:1.5;
+  font-weight:500;
   transition:all .25s;
   word-break:break-all;
   cursor:pointer;
-  border-radius:6px;
-  padding:2px 4px;
-  margin:-2px -4px;
-  color:#4A4A4A;
+  border-radius:8px;
+  padding:2px 6px;
+  margin:-2px -6px;
+  color:var(--text-primary);
 }
-.task-title:hover{background:rgba(0,0,0,.03)}
+.task-title:hover{background:rgba(91,79,207,.05)}
 
-/* Priority */
+/* Priority — colored dot indicator */
 .priority-tag{
-  font-size:10px;
-  padding:3px 10px;
-  border-radius:50px;
-  font-weight:500;
+  font-size:0;
+  width:8px;height:8px;
+  border-radius:50%;
   flex-shrink:0;
+  box-shadow:0 0 0 2px rgba(255,255,255,0.8);
 }
-.priority-high{background:#FFE5E5;color:#E88888}
-.priority-mid{background:#FFF4E5;color:#E8B878}
-.priority-low{background:#F0F5E8;color:#98C878}
+.priority-high{background:var(--accent-pink)}
+.priority-mid{background:var(--accent-yellow)}
+.priority-low{background:var(--accent-green)}
 
-/* Delete */
+/* Delete — hidden by default, reveal on hover */
 .task-del{
-  width:26px;height:26px;
+  width:28px;height:28px;
   border-radius:50%;
   border:none;
   background:transparent;
-  color:#C8C8C8;
+  color:#C8C8D8;
   font-size:16px;
   cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   transition:all .2s;
   flex-shrink:0;
+  opacity:0;
 }
-.task-del:hover{background:#F5F5F5;color:#E88888}
+.task-item:hover .task-del{opacity:1}
+.task-del:hover{background:#FFF0F3;color:var(--accent-pink)}
 
 .empty-msg{
   text-align:center;
-  color:#B8B8B8;font-size:14px;
+  color:var(--text-secondary);font-size:14px;
   padding:28px 0;
 }
 
 /* Deadline */
 .task-deadline{
-  font-size:11px;color:#B8B8B8;
+  font-size:11px;color:var(--text-secondary);
   flex-shrink:0;
+  background:var(--primary-soft);
+  padding:3px 10px;
+  border-radius:50px;
+  font-weight:500;
 }
-.task-deadline.overdue{color:#E88888;font-weight:500}
+.task-deadline.overdue{
+  color:var(--accent-pink);
+  background:#FFF0F5;
+  font-weight:600;
+}
 
 /* ===== AI Suggestion Card ===== */
 .ai-card{
-  background:#FFFFFF;
-  border-radius:18px;
+  background:var(--card-bg);
+  border-radius:24px;
   overflow:hidden;
-  box-shadow:0 2px 12px rgba(0,0,0,0.04);
-  animation:fadeInUp .4s ease both;
+  box-shadow:var(--shadow-card);
+  animation:fadeInUp .5s ease both;
   animation-delay:.1s;
 }
 .ai-card-header{
-  padding:18px 20px;
-  background:linear-gradient(135deg,#E8C8A8,#F4E0C8);
-  display:flex;align-items:center;gap:10px;
+  padding:20px 22px;
+  background:linear-gradient(135deg,#8B7FE8,#A78BFA);
+  display:flex;align-items:center;gap:12px;
   color:#fff;
 }
 .ai-card-header .avatar{
-  background:rgba(255,255,255,.25);
+  background:rgba(255,255,255,.3);
 }
-.ai-card-header .name{font-size:17px;font-weight:600;color:#fff;letter-spacing:.3px}
+.ai-card-header .name{font-size:17px;font-weight:700;color:#fff;letter-spacing:.3px}
 .ai-text{
   font-size:14px;line-height:1.8;
-  color:#5A5A5A;
+  color:var(--text-primary);
   margin-bottom:16px;
   min-height:60px;
   white-space:pre-line;
 }
-.ai-text.loading{color:#B8B8B8;font-style:italic}
+.ai-text.loading{color:var(--text-secondary);font-style:italic}
 .refresh-btn{
-  padding:10px 24px;
-  border-radius:20px;
+  padding:12px 24px;
+  border-radius:50px;
   border:none;
-  background:linear-gradient(135deg,#F4B9A8,#F8D5C4);
-  color:#fff;font-size:13px;font-weight:500;
+  background:linear-gradient(135deg,#5B4FCF,#8B7FE8);
+  color:#fff;font-size:13px;font-weight:600;
   cursor:pointer;
-  transition:all .25s;
-  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  transition:all .3s;
+  box-shadow:0 4px 16px rgba(91,79,207,0.3);
   width:100%;
 }
-.refresh-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.12)}
-.refresh-btn:active{transform:scale(.98)}
+.refresh-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(91,79,207,0.4)}
+.refresh-btn:active{transform:scale(.97)}
 
 /* ===== FAB ===== */
 .fab{
-  position:fixed;right:24px;bottom:24px;
+  position:fixed;right:24px;bottom:32px;
   z-index:95;
-  width:56px;height:56px;
+  width:64px;height:64px;
   border-radius:50%;border:none;
-  background:linear-gradient(135deg,#F4B9A8,#F8D5C4);
-  color:#fff;font-size:28px;
+  background:linear-gradient(135deg,#5B4FCF,#8B7FE8);
+  color:#fff;font-size:32px;font-weight:300;
   cursor:pointer;
-  box-shadow:0 4px 16px rgba(0,0,0,0.12);
-  transition:all .3s;
+  box-shadow:0 8px 28px rgba(91,79,207,0.45);
+  transition:all .3s cubic-bezier(.4,0,.2,1);
   display:flex;align-items:center;justify-content:center;
 }
-.fab:hover{transform:scale(1.05);box-shadow:0 6px 20px rgba(0,0,0,0.16)}
-.fab:active{transform:scale(.95)}
+.fab:hover{
+  transform:translateY(-4px) scale(1.05);
+  box-shadow:0 12px 36px rgba(91,79,207,0.55);
+}
+.fab:active{transform:translateY(0) scale(.95)}
 
 /* ===== Modal ===== */
 .modal-mask{
   position:fixed;inset:0;z-index:200;
-  background:rgba(0,0,0,0.35);
+  background:rgba(45,42,94,0.5);
   display:flex;align-items:flex-end;justify-content:center;
   animation:fadeIn .25s ease;
-  backdrop-filter:blur(4px);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
 }
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
 .modal-box{
-  background:#FFFFFF;
-  border-radius:18px 18px 0 0;
+  background:var(--card-bg);
+  border-radius:24px 24px 0 0;
   width:100%;max-width:480px;
   max-height:90vh;
-  box-shadow:0 -4px 20px rgba(0,0,0,0.08);
-  animation:slideUp .35s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 -8px 40px rgba(91,79,207,0.2);
+  animation:slideUp .4s cubic-bezier(.4,0,.2,1);
   overflow:hidden;
   display:flex;flex-direction:column;
 }
-@keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:translateY(0)}}
 
 .modal-header{
-  padding:20px 24px;
-  background:linear-gradient(135deg,#F4B9A8 0%,#F8D5C4 100%);
+  padding:22px 24px;
+  background:linear-gradient(135deg,#5B4FCF,#8B7FE8);
   color:#fff;
-  font-size:17px;font-weight:600;
+  font-size:17px;font-weight:700;
   text-align:center;
   flex-shrink:0;
 }
@@ -310,48 +376,49 @@ h1,h2,h3,.name{font-weight:600}
 .form-group{margin-bottom:20px}
 .form-group label{
   display:block;
-  font-size:13px;font-weight:500;color:#6A6A6A;
+  font-size:13px;font-weight:600;color:var(--text-secondary);
   margin-bottom:8px;
+  letter-spacing:.3px;
 }
 .form-group select,
 .form-group input,
 .form-group textarea{
   width:100%;
-  padding:12px 16px;
-  border:1.5px solid #E8E8E8;
-  border-radius:12px;
+  padding:13px 16px;
+  border:2px solid #EEEDF5;
+  border-radius:14px;
   font-size:14px;
   transition:all .25s;
   outline:none;
-  background:#FAFAFA;
+  background:#FAFAFE;
   font-family:inherit;
-  color:#4A4A4A;
+  color:var(--text-primary);
 }
 .form-group select:focus,
 .form-group input:focus,
 .form-group textarea:focus{
-  border-color:#F4B9A8;
+  border-color:var(--primary-light);
   background:#fff;
-  box-shadow:0 0 0 3px rgba(244,185,168,0.15);
+  box-shadow:0 0 0 4px rgba(91,79,207,0.08);
 }
 .form-group textarea{resize:vertical;min-height:60px}
 
 .priority-options{display:flex;gap:10px}
 .priority-opt{
   flex:1;
-  padding:10px 0;
-  border-radius:12px;
-  border:1.5px solid #E8E8E8;
+  padding:11px 0;
+  border-radius:14px;
+  border:2px solid #EEEDF5;
   text-align:center;
-  font-size:13px;font-weight:500;
+  font-size:13px;font-weight:600;
   cursor:pointer;
   transition:all .25s;
-  background:#FAFAFA;
+  background:#FAFAFE;
 }
-.priority-opt:hover{border-color:#C8C8C8}
-.priority-opt.sel-high{border-color:#E88888;background:#FFF0F0;color:#E88888}
-.priority-opt.sel-mid{border-color:#E8B878;background:#FFF8F0;color:#E8B878}
-.priority-opt.sel-low{border-color:#98C878;background:#F5FAF0;color:#98C878}
+.priority-opt:hover{border-color:#D8D8E8}
+.priority-opt.sel-high{border-color:var(--accent-pink);background:#FFF0F5;color:var(--accent-pink)}
+.priority-opt.sel-mid{border-color:var(--accent-yellow);background:#FFFDF0;color:#D4A017}
+.priority-opt.sel-low{border-color:var(--accent-green);background:#F0FFF5;color:var(--accent-green)}
 
 .modal-footer{
   display:flex;gap:12px;
@@ -360,75 +427,75 @@ h1,h2,h3,.name{font-weight:600}
 }
 .btn-cancel,.btn-confirm{
   flex:1;
-  padding:12px 0;
-  border-radius:24px;
+  padding:14px 0;
+  border-radius:50px;
   border:none;
-  font-size:15px;font-weight:500;
+  font-size:15px;font-weight:600;
   cursor:pointer;
   transition:all .25s;
-  min-height:44px;
+  min-height:48px;
 }
-.btn-cancel{background:#F0F0F0;color:#8A8A8A}
-.btn-cancel:hover{background:#E8E8E8;color:#5A5A5A}
+.btn-cancel{background:#F0EFF5;color:var(--text-secondary)}
+.btn-cancel:hover{background:#E8E7F0;color:var(--text-primary)}
 .btn-confirm{
-  background:linear-gradient(135deg,#F4B9A8,#F8D5C4);
+  background:linear-gradient(135deg,#5B4FCF,#8B7FE8);
   color:#fff;
-  box-shadow:0 2px 8px rgba(0,0,0,0.1);
+  box-shadow:0 4px 16px rgba(91,79,207,0.3);
 }
-.btn-confirm:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.15)}
-.btn-confirm:active{transform:scale(.98)}
+.btn-confirm:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(91,79,207,0.4)}
+.btn-confirm:active{transform:scale(.97)}
 .btn-confirm:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
 
 /* ===== Toast ===== */
 .toast{
   position:fixed;top:80px;left:50%;transform:translateX(-50%);
   z-index:999;
-  padding:12px 28px;
-  border-radius:24px;
-  font-size:14px;font-weight:500;
+  padding:13px 28px;
+  border-radius:50px;
+  font-size:14px;font-weight:600;
   color:#fff;
-  box-shadow:0 4px 16px rgba(0,0,0,0.12);
+  box-shadow:0 6px 24px rgba(91,79,207,0.25);
   animation:toastIn .35s ease;
   pointer-events:none;
 }
-.toast.success{background:linear-gradient(135deg,#98C878,#B8D898)}
-.toast.error{background:linear-gradient(135deg,#E88888,#F4B8B8)}
+.toast.success{background:linear-gradient(135deg,#6BCB77,#8BE89C)}
+.toast.error{background:linear-gradient(135deg,#FF6B9D,#FF9BC0)}
 @keyframes toastIn{from{opacity:0;transform:translate(-50%,-20px)}to{opacity:1;transform:translate(-50%,0)}}
 
 /* ===== Responsive ===== */
 @media(max-width:720px){
-  .main-layout{padding:16px 12px}
-  .top-nav{padding:16px 16px 28px}
+  .main-layout{padding:16px 12px 80px}
+  .top-nav{padding:16px 16px 20px}
   .top-nav h1{font-size:18px}
+  .fab{width:56px;height:56px;font-size:28px;right:18px;bottom:24px}
 }
 
 /* ===== Scrollbar ===== */
-::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:#E0E0E0;border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:#C8C8C8}
+::-webkit-scrollbar-thumb{background:#D8D8E8;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#C0C0D8}
 
-
-/* Settings Panel */
+/* ===== Settings Panel ===== */
 .settings-panel{
   position:fixed;top:0;right:0;bottom:0;z-index:300;
   width:360px;max-width:90vw;
-  background:#FFFFFF;
-  box-shadow:-4px 0 24px rgba(0,0,0,0.08);
+  background:var(--card-bg);
+  box-shadow:-8px 0 32px rgba(91,79,207,0.15);
   animation:slideLeft .3s ease;
   display:flex;flex-direction:column;
 }
 @keyframes slideLeft{from{transform:translateX(100%)}to{transform:translateX(0)}}
 .settings-mask{
   position:fixed;inset:0;z-index:299;
-  background:rgba(0,0,0,0.3);
+  background:rgba(45,42,94,0.4);
   animation:fadeIn .25s ease;
   backdrop-filter:blur(4px);
 }
 .settings-header{
   padding:20px;
-  background:linear-gradient(135deg,#F4B9A8,#F8D5C4);
-  color:#fff;font-size:16px;font-weight:600;
+  background:linear-gradient(135deg,#5B4FCF,#8B7FE8);
+  color:#fff;font-size:16px;font-weight:700;
   display:flex;align-items:center;justify-content:space-between;
 }
 .settings-close{
@@ -439,49 +506,48 @@ h1,h2,h3,.name{font-weight:600}
 }
 .settings-body{padding:20px;overflow-y:auto;flex:1}
 .settings-body .form-group{margin-bottom:16px}
-.settings-body .hint{font-size:11px;color:#B8B8B8;margin-top:4px}
+.settings-body .hint{font-size:11px;color:var(--text-secondary);margin-top:4px}
 .settings-save{
-  margin:20px;padding:12px;border-radius:24px;border:none;
-  background:linear-gradient(135deg,#F4B9A8,#F8D5C4);
-  color:#fff;font-size:15px;font-weight:500;cursor:pointer;
-  box-shadow:0 2px 8px rgba(0,0,0,0.1);
-  min-height:44px;
+  margin:20px;padding:14px;border-radius:50px;border:none;
+  background:linear-gradient(135deg,#5B4FCF,#8B7FE8);
+  color:#fff;font-size:15px;font-weight:600;cursor:pointer;
+  box-shadow:0 4px 16px rgba(91,79,207,0.3);
+  min-height:48px;
 }
-
 
 /* ===== Member Chips (multi-select) ===== */
 .member-chips{display:flex;flex-wrap:wrap;gap:8px}
 .member-chip{
   display:flex;align-items:center;gap:5px;
-  padding:8px 16px;
-  border-radius:20px;
-  border:1.5px solid #E8E8E8;
-  font-size:13px;font-weight:500;
+  padding:9px 18px;
+  border-radius:50px;
+  border:2px solid #EEEDF5;
+  font-size:13px;font-weight:600;
   cursor:pointer;
   transition:all .25s;
   user-select:none;
-  background:#FAFAFA;
-  color:#4A4A4A;
+  background:#FAFAFE;
+  color:var(--text-primary);
   min-height:44px;
 }
-.member-chip:hover{border-color:#C8C8C8;background:#F5F5F5}
+.member-chip:hover{border-color:#D8D8E8;background:#F5F3FF}
 .member-chip.selected{color:#fff;border-color:transparent}
 .all-chip{
-  padding:8px 20px;
-  border-radius:20px;
-  border:1.5px solid #F4B9A8;
-  font-size:13px;font-weight:500;
+  padding:9px 22px;
+  border-radius:50px;
+  border:2px solid var(--primary);
+  font-size:13px;font-weight:600;
   cursor:pointer;
   transition:all .25s;
   user-select:none;
   background:#fff;
-  color:#F4B9A8;
+  color:var(--primary);
   margin-bottom:4px;
   min-height:44px;
 }
-.all-chip:hover{background:#FFF8F5}
+.all-chip:hover{background:var(--primary-soft)}
 .all-chip.selected{
-  background:linear-gradient(135deg,#F4B9A8,#F8D5C4);
+  background:linear-gradient(135deg,#5B4FCF,#8B7FE8);
   color:#fff;border-color:transparent;
 }
 
@@ -489,26 +555,26 @@ h1,h2,h3,.name{font-weight:600}
 .family-sub{
   margin-top:8px;
   padding:12px;
-  background:#FAFAFA;
-  border-radius:12px;
-  border:1px dashed #E0E0E0;
+  background:var(--primary-soft);
+  border-radius:16px;
+  border:1.5px dashed #D8D8E8;
 }
-.family-sub-label{font-size:11px;color:#B8B8B8;font-weight:500;margin-bottom:6px}
+.family-sub-label{font-size:11px;color:var(--text-secondary);font-weight:600;margin-bottom:6px}
 .family-sub .member-chips{gap:6px}
-.family-sub .member-chip{padding:6px 14px;font-size:12px}
+.family-sub .member-chip{padding:7px 14px;font-size:12px}
 
 /* ===== Deadline Hint ===== */
 .deadline-hint{
   display:inline-flex;align-items:center;gap:6px;
   margin-top:6px;
   font-size:12px;
-  padding:4px 12px;
-  border-radius:20px;
-  font-weight:500;
+  padding:5px 14px;
+  border-radius:50px;
+  font-weight:600;
 }
-.deadline-hint.hint-today{background:#F5FAF0;color:#98C878}
-.deadline-hint.hint-week{background:#FFF8F0;color:#E8B878}
-.deadline-hint.hint-later{background:#F8F5FF;color:#B8A8D8}
+.deadline-hint.hint-today{background:#FFF0F5;color:var(--accent-pink)}
+.deadline-hint.hint-week{background:var(--primary-soft);color:var(--primary)}
+.deadline-hint.hint-later{background:#F8F5FF;color:var(--primary-light)}
 
 /* ===== Multi-member avatars in task ===== */
 .task-members{
@@ -516,176 +582,223 @@ h1,h2,h3,.name{font-weight:600}
   flex-shrink:0;
 }
 .member-avatar-mini{
-  width:20px;height:20px;
+  width:22px;height:22px;
   border-radius:50%;
   display:flex;align-items:center;justify-content:center;
   font-size:11px;
-  background:#F5F5F5;
+  background:#F5F3FF;
 }
 
 /* ===== Elder tag in family card ===== */
 .elder-tag{
   font-size:10px;
-  padding:2px 8px;
-  border-radius:20px;
-  background:#F5F5F5;
-  color:#8A8A8A;
-  font-weight:500;
+  padding:3px 10px;
+  border-radius:50px;
+  background:var(--primary-soft);
+  color:var(--primary);
+  font-weight:600;
   flex-shrink:0;
   white-space:nowrap;
 }
 
 /* ===== Future Task (beyond this week) ===== */
-.task-item.future{opacity:.5}
-.task-item.future .task-title{color:#B8B8B8}
+.task-item.future{opacity:.45}
+.task-item.future .task-title{color:var(--text-secondary)}
 .future-tag{
   font-size:10px;
-  padding:2px 8px;
-  border-radius:20px;
-  background:#F5F5F5;
-  color:#B8B8B8;
-  font-weight:500;
+  padding:3px 10px;
+  border-radius:50px;
+  background:#F5F3FF;
+  color:var(--primary-light);
+  font-weight:600;
   flex-shrink:0;
 }
 
 /* ===== View All Button in card header ===== */
 .card-header .view-btn{
-  font-size:11px;padding:4px 12px;border-radius:20px;margin-left:6px;
-  background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;font-weight:500;z-index:1;
+  font-size:12px;padding:6px 16px;border-radius:50px;margin-left:6px;
+  background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;
+  font-weight:600;z-index:1;
   transition:all .2s;
+  backdrop-filter:blur(10px);
 }
-.card-header .view-btn:hover{background:rgba(255,255,255,.3)}
-.done-at{font-size:10px;color:#B8B8B8;flex-shrink:0}
+.card-header .view-btn:hover{background:rgba(255,255,255,.35);transform:translateY(-1px)}
+.done-at{font-size:10px;color:var(--text-secondary);flex-shrink:0}
 
 /* ===== Task History Overlay ===== */
 .history-overlay{
-  position:fixed;inset:0;z-index:250;background:#F5F0E8;
+  position:fixed;inset:0;z-index:250;
+  background:linear-gradient(180deg,#764ba2 0%,#667eea 100%);
   display:flex;flex-direction:column;animation:fadeIn .3s ease;overflow:hidden;
 }
 .history-header{
-  padding:20px 24px;display:flex;align-items:center;gap:12px;color:#fff;flex-shrink:0;
+  padding:22px 24px;display:flex;align-items:center;gap:14px;color:#fff;flex-shrink:0;
 }
-.history-header h2{font-size:17px;font-weight:600;flex:1}
+.history-header h2{font-size:18px;font-weight:700;flex:1}
 .history-header button{
-  width:36px;height:36px;border-radius:50%;border:none;
-  background:rgba(255,255,255,.25);color:#fff;font-size:18px;cursor:pointer;
+  width:40px;height:40px;border-radius:50%;border:none;
+  background:rgba(255,255,255,.2);color:#fff;font-size:18px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
 }
-.history-header button:hover{background:rgba(255,255,255,.35)}
+.history-header button:hover{background:rgba(255,255,255,.35);transform:scale(1.05)}
 .history-body{flex:1;overflow-y:auto;padding:20px 24px}
-.history-section-title{font-size:13px;font-weight:600;color:#8A8A8A;margin:18px 0 10px;padding-left:4px}
+.history-body .task-item{background:rgba(255,255,255,0.95)}
+.history-body .task-item.done{background:rgba(255,255,255,0.6)}
+.history-section-title{
+  font-size:13px;font-weight:700;
+  color:rgba(255,255,255,0.8);
+  margin:18px 0 10px;padding-left:4px;
+}
 .history-section-title:first-child{margin-top:0}
 
 /* ===== Expiry Reminder Card ===== */
-.expiry-card{border-radius:18px;overflow:hidden;background:#FFFFFF;box-shadow:0 2px 12px rgba(0,0,0,0.04);animation:fadeInUp .4s ease both}
-.expiry-card .card-header{background:linear-gradient(135deg,#98C878,#B8D898);padding:18px 20px;display:flex;align-items:center;gap:10px;color:#fff}
-.expiry-card .card-header .name{font-size:16px;font-weight:600}
+.expiry-card{
+  border-radius:24px;overflow:hidden;
+  background:var(--card-bg);
+  box-shadow:var(--shadow-card);
+  animation:fadeInUp .5s ease both;
+}
+.expiry-card .card-header{
+  background:linear-gradient(135deg,#6BCB77,#8BE89C);
+  padding:20px 22px;display:flex;align-items:center;gap:12px;color:#fff;
+}
+.expiry-card .card-header .name{font-size:16px;font-weight:700}
 .expiry-card .view-all-btn{
-  margin-left:auto;font-size:12px;padding:4px 14px;border-radius:20px;
-  background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;font-weight:500;
+  margin-left:auto;font-size:12px;padding:6px 16px;border-radius:50px;
+  background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;font-weight:600;
+  transition:all .2s;
 }
-.expiry-card .view-all-btn:hover{background:rgba(255,255,255,.3)}
-.expiry-list{padding:14px 18px;max-height:300px;overflow-y:auto}
+.expiry-card .view-all-btn:hover{background:rgba(255,255,255,.35)}
+.expiry-list{padding:14px 16px;max-height:300px;overflow-y:auto}
 .expiry-item{
-  display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;
-  margin-bottom:8px;background:#FAFAFA;transition:all .2s;
+  display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;
+  margin-bottom:8px;background:#FAFAFE;transition:all .2s;
 }
-.expiry-item:hover{background:#F5F5F5}
-.expiry-thumb{width:48px;height:48px;border-radius:12px;object-fit:cover;background:#F5F5F5;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
-.expiry-thumb img{width:100%;height:100%;border-radius:12px;object-fit:cover}
+.expiry-item:hover{background:var(--primary-soft)}
+.expiry-thumb{
+  width:48px;height:48px;border-radius:14px;object-fit:cover;
+  background:#F5F3FF;display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+  box-shadow:0 2px 8px rgba(91,79,207,0.08);
+}
+.expiry-thumb img{width:100%;height:100%;border-radius:14px;object-fit:cover}
 .expiry-info{flex:1;min-width:0}
-.expiry-info .ename{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#4A4A4A}
-.expiry-info .emeta{font-size:11px;color:#B8B8B8;margin-top:2px}
-.expiry-status{font-size:10px;font-weight:500;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
-.expiry-status.expired{background:#FFE5E5;color:#E88888}
-.expiry-status.urgent{background:#FFF4E5;color:#E8B878}
-.expiry-status.warning{background:#FFF8E5;color:#D8B848}
-.expiry-status.safe{background:#F5FAF0;color:#98C878}
-.cat-tag{font-size:10px;padding:2px 8px;border-radius:20px;background:#F5F5F5;color:#8A8A8A;font-weight:500;margin-left:4px}
+.expiry-info .ename{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-primary)}
+.expiry-info .emeta{font-size:11px;color:var(--text-secondary);margin-top:2px}
+.expiry-status{
+  font-size:10px;font-weight:700;padding:4px 12px;border-radius:50px;
+  white-space:nowrap;flex-shrink:0;
+}
+.expiry-status.expired{background:#FFE5EE;color:var(--accent-pink)}
+.expiry-status.urgent{background:#FFF4E5;color:#FF8C42}
+.expiry-status.warning{background:#FFFDE5;color:#D4A017}
+.expiry-status.safe{background:#F0FFF5;color:var(--accent-green)}
+.cat-tag{
+  font-size:10px;padding:2px 8px;border-radius:50px;
+  background:var(--primary-soft);color:var(--primary);font-weight:600;margin-left:4px;
+}
 
 /* ===== Items Fullscreen Overlay ===== */
 .items-overlay{
-  position:fixed;inset:0;z-index:250;background:#F5F0E8;
+  position:fixed;inset:0;z-index:250;
+  background:linear-gradient(180deg,#6BCB77 0%,#667eea 30%,#764ba2 100%);
   display:flex;flex-direction:column;animation:fadeIn .3s ease;overflow:hidden;
 }
 .items-header{
-  padding:20px 24px;background:linear-gradient(135deg,#98C878,#B8D898);
+  padding:22px 24px;
+  background:rgba(107,203,119,0.3);
+  backdrop-filter:blur(20px);
   display:flex;align-items:center;gap:12px;color:#fff;flex-shrink:0;
 }
-.items-header h2{font-size:18px;font-weight:600;flex:1}
+.items-header h2{font-size:18px;font-weight:700;flex:1}
 .items-header button{
-  width:36px;height:36px;border-radius:50%;border:none;
-  background:rgba(255,255,255,.25);color:#fff;font-size:18px;cursor:pointer;
+  width:40px;height:40px;border-radius:50%;border:none;
+  background:rgba(255,255,255,.2);color:#fff;font-size:18px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   min-width:44px;min-height:44px;
+  transition:all .2s;
 }
-.items-header button:hover{background:rgba(255,255,255,.35)}
+.items-header button:hover{background:rgba(255,255,255,.35);transform:scale(1.05)}
 .items-body{flex:1;overflow-y:auto;padding:20px 24px}
 .items-group{margin-bottom:24px}
-.items-group-title{font-size:15px;font-weight:600;color:#4A4A4A;margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.items-group-title .count{font-size:12px;color:#B8B8B8;font-weight:400}
+.items-group-title{
+  font-size:15px;font-weight:700;color:#fff;margin-bottom:12px;
+  display:flex;align-items:center;gap:6px;
+  text-shadow:0 1px 4px rgba(0,0,0,0.15);
+}
+.items-group-title .count{font-size:12px;color:rgba(255,255,255,.7);font-weight:500}
 .item-row{
   display:flex;align-items:center;gap:12px;padding:14px 16px;
-  background:#FFFFFF;border-radius:14px;margin-bottom:10px;
-  box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:all .2s;
+  background:var(--card-bg);border-radius:18px;margin-bottom:10px;
+  box-shadow:0 4px 16px rgba(91,79,207,0.08);transition:all .25s;
 }
-.item-row:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08)}
-.item-thumb{width:48px;height:48px;border-radius:12px;background:#F5F5F5;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;overflow:hidden}
-.item-thumb img{width:100%;height:100%;object-fit:cover;border-radius:12px}
+.item-row:hover{box-shadow:0 6px 24px rgba(91,79,207,0.14);transform:translateY(-2px)}
+.item-thumb{
+  width:48px;height:48px;border-radius:14px;
+  background:#F5F3FF;display:flex;align-items:center;justify-content:center;
+  font-size:24px;flex-shrink:0;overflow:hidden;
+}
+.item-thumb img{width:100%;height:100%;object-fit:cover;border-radius:14px}
 .item-info{flex:1;min-width:0}
-.item-info .iname{font-size:14px;font-weight:500;margin-bottom:3px;color:#4A4A4A}
-.item-info .imeta{font-size:12px;color:#B8B8B8}
+.item-info .iname{font-size:14px;font-weight:600;margin-bottom:3px;color:var(--text-primary)}
+.item-info .imeta{font-size:12px;color:var(--text-secondary)}
 .item-actions{display:flex;gap:8px;flex-shrink:0}
 .item-actions button{
-  width:32px;height:32px;border-radius:50%;border:none;background:#F5F5F5;
-  font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;
+  width:34px;height:34px;border-radius:50%;border:none;background:#F5F3FF;
+  font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
   min-width:44px;min-height:44px;
 }
-.item-actions .edit-btn:hover{background:#F0F5E8;color:#98C878}
-.item-actions .del-btn:hover{background:#FFE5E5;color:#E88888}
+.item-actions .edit-btn:hover{background:#F0FFF5;color:var(--accent-green)}
+.item-actions .del-btn:hover{background:#FFF0F5;color:var(--accent-pink)}
 
 /* ===== Add Item Modal ===== */
 .item-modal{z-index:260}
 .item-modal .modal-box{max-width:520px}
-.item-modal .modal-header{background:linear-gradient(135deg,#98C878,#B8D898)}
-.item-tabs{display:flex;gap:0;margin-bottom:16px;border-radius:20px;overflow:hidden;border:1.5px solid #E8E8E8;background:#FAFAFA}
+.item-modal .modal-header{background:linear-gradient(135deg,#6BCB77,#8BE89C)}
+.item-tabs{
+  display:flex;gap:0;margin-bottom:16px;
+  border-radius:50px;overflow:hidden;
+  border:2px solid #EEEDF5;background:#FAFAFE;
+}
 .item-tab{
-  flex:1;padding:10px 0;text-align:center;font-size:13px;font-weight:500;
-  cursor:pointer;transition:all .25s;background:transparent;color:#8A8A8A;
+  flex:1;padding:11px 0;text-align:center;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .25s;background:transparent;color:var(--text-secondary);
 }
-.item-tab.active{background:#F4B9A8;color:#fff}
+.item-tab.active{background:var(--primary);color:#fff}
 .upload-zone{
-  border:1.5px dashed #E0E0E0;border-radius:14px;padding:32px 20px;text-align:center;
-  cursor:pointer;transition:all .3s;background:#FAFAFA;position:relative;
+  border:2px dashed #D8D8E8;border-radius:18px;padding:32px 20px;text-align:center;
+  cursor:pointer;transition:all .3s;background:#FAFAFE;position:relative;
 }
-.upload-zone:hover{border-color:#F4B9A8;background:#FFF8F5}
-.upload-zone.has-image{border-style:solid;border-color:#98C878}
+.upload-zone:hover{border-color:var(--primary-light);background:var(--primary-soft)}
+.upload-zone.has-image{border-style:solid;border-color:var(--accent-green)}
 .upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
-.upload-zone .placeholder{color:#B8B8B8;font-size:14px}
+.upload-zone .placeholder{color:var(--text-secondary);font-size:14px}
 .upload-zone .placeholder span{font-size:32px;display:block;margin-bottom:8px}
-.upload-preview{max-width:100%;max-height:200px;border-radius:12px;margin-top:8px}
-.ai-recognizing{color:#98C878;font-size:13px;font-weight:500;padding:8px 0;text-align:center}
+.upload-preview{max-width:100%;max-height:200px;border-radius:14px;margin-top:8px}
+.ai-recognizing{color:var(--accent-green);font-size:13px;font-weight:600;padding:8px 0;text-align:center}
 .images-strip{display:flex;gap:8px;overflow-x:auto;padding:8px 0;margin-top:8px}
 .images-strip::-webkit-scrollbar{height:4px}
 .img-thumb-wrap{position:relative;flex-shrink:0}
-.img-thumb-wrap img{width:72px;height:72px;border-radius:12px;object-fit:cover;border:1.5px solid #E8E8E8}
+.img-thumb-wrap img{width:72px;height:72px;border-radius:14px;object-fit:cover;border:2px solid #EEEDF5}
 .img-thumb-wrap .img-del{
-  position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;
-  background:#E88888;color:#fff;border:none;font-size:12px;cursor:pointer;
+  position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;
+  background:var(--accent-pink);color:#fff;border:none;font-size:12px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;line-height:1;
 }
-.recognize-status{padding:10px 14px;border-radius:12px;font-size:13px;font-weight:500;margin-bottom:12px}
-.recognize-status.success{background:#F5FAF0;color:#98C878;border:1px solid #B8D898}
-.recognize-status.error{background:#FFF0F0;color:#E88888;border:1px solid #F4B8B8}
-.recognize-status.loading{background:#FFF8F5;color:#F4B9A8;border:1px solid #F8D5C4}
-.field-unrecognized{border-color:#E8B878 !important}
-.field-hint{font-size:11px;color:#E8B878;margin-top:4px}
+.recognize-status{padding:12px 16px;border-radius:14px;font-size:13px;font-weight:600;margin-bottom:12px}
+.recognize-status.success{background:#F0FFF5;color:var(--accent-green);border:1.5px solid #8BE89C}
+.recognize-status.error{background:#FFF0F5;color:var(--accent-pink);border:1.5px solid #FF9BC0}
+.recognize-status.loading{background:var(--primary-soft);color:var(--primary);border:1.5px solid #D8D8F8}
+.field-unrecognized{border-color:var(--accent-yellow) !important}
+.field-hint{font-size:11px;color:var(--accent-yellow);margin-top:4px}
 .date-mode{display:flex;gap:8px;margin-bottom:10px}
 .date-mode-btn{
-  flex:1;padding:10px;border-radius:20px;border:1.5px solid #E8E8E8;text-align:center;
-  font-size:12px;font-weight:500;cursor:pointer;transition:all .25s;background:#FAFAFA;
+  flex:1;padding:11px;border-radius:50px;border:2px solid #EEEDF5;text-align:center;
+  font-size:12px;font-weight:600;cursor:pointer;transition:all .25s;background:#FAFAFE;
 }
-.date-mode-btn.active{border-color:#98C878;background:#F5FAF0;color:#98C878}
+.date-mode-btn.active{border-color:var(--accent-green);background:#F0FFF5;color:var(--accent-green)}
 </style>
 </head>
 <body>
@@ -708,15 +821,15 @@ h1,h2,h3,.name{font-weight:600}
     <div class="col-left">
       <!-- 今日任务 -->
       <div class="member-card today-card" v-if="todayTasks.length">
-        <div class="card-header" style="background:linear-gradient(135deg,#F4B9A8,#F8D5C4)">
-          <div class="avatar" style="font-size:16px">今</div>
+        <div class="card-header" style="background:linear-gradient(135deg,#5B4FCF,#8B7FE8);--card-accent:#5B4FCF">
+          <div class="avatar" style="font-size:18px">今</div>
           <span class="name">今日任务</span>
           <span class="progress-text">{{ todayDone }}/{{ todayTasks.length }}</span>
-          <button class="view-btn" @click="openCardView('today','今日任务','linear-gradient(135deg,#F4B9A8,#F8D5C4)')">查看</button>
+          <button class="view-btn" @click="openCardView('today','今日任务','linear-gradient(135deg,#5B4FCF,#8B7FE8)')">查看</button>
         </div>
         <div class="progress-bar-wrap">
           <div class="progress-bar-fill"
-               :style="{width: todayProgress+'%', background:'#F4B9A8'}"></div>
+               :style="{width: todayProgress+'%', background:'linear-gradient(90deg,#5B4FCF,#8B7FE8)'}"></div>
         </div>
         <div class="task-list">
           <div v-if="todayTasks.length===0" class="empty-msg">今天没有任务，好好休息吧</div>
@@ -729,14 +842,14 @@ h1,h2,h3,.name{font-weight:600}
             <span class="task-title" @click="openEdit(t)">{{ t.title }}</span>
             <span v-if="t.done_at" class="done-at">{{ formatDoneAt(t.done_at) }}</span>
             <span class="priority-tag"
-                  :class="'priority-'+t.priority">{{ priorityLabel(t.priority) }}</span>
+                  :class="'priority-'+t.priority"></span>
             <button class="task-del" @click="deleteTask(t)" title="删除">×</button>
           </div>
         </div>
       </div>
       <!-- 多人任务 -->
       <div class="member-card" style="animation-delay:.06s">
-        <div class="card-header" :style="{background: multiCard.gradient}">
+        <div class="card-header" :style="{background: multiCard.gradient, '--card-accent': multiCard.color}">
           <div class="avatar">{{ multiCard.emoji }}</div>
           <span class="name">{{ multiCard.name }}</span>
           <span class="progress-text">{{ cardDone('multi') }}/{{ cardTasks('multi').length }}</span>
@@ -744,7 +857,7 @@ h1,h2,h3,.name{font-weight:600}
         </div>
         <div class="progress-bar-wrap">
           <div class="progress-bar-fill"
-               :style="{width: cardProgress('multi')+'%', background: multiCard.color}"></div>
+               :style="{width: cardProgress('multi')+'%', background: 'linear-gradient(90deg,'+multiCard.color+',#a78bfa)'}"></div>
         </div>
         <div class="task-list">
           <div v-if="cardTasks('multi').length===0" class="empty-msg">暂无多人任务</div>
@@ -761,7 +874,7 @@ h1,h2,h3,.name{font-weight:600}
               {{ formatDeadline(t.deadline) }}
             </span>
             <span class="priority-tag"
-                  :class="'priority-'+t.priority">{{ priorityLabel(t.priority) }}</span>
+                  :class="'priority-'+t.priority"></span>
             <button class="task-del" @click="deleteTask(t)" title="删除">×</button>
           </div>
         </div>
@@ -772,7 +885,7 @@ h1,h2,h3,.name{font-weight:600}
     <div class="col-mid">
       <div class="member-card" v-for="c in soloCards" :key="c.key"
            :style="{'animation-delay': c.delay}">
-        <div class="card-header" :style="{background: c.gradient}">
+        <div class="card-header" :style="{background: c.gradient, '--card-accent': c.color}">
           <div class="avatar">{{ c.emoji }}</div>
           <span class="name">{{ c.name }}</span>
           <span class="progress-text">{{ cardDone(c.key) }}/{{ cardTasks(c.key).length }}</span>
@@ -780,7 +893,7 @@ h1,h2,h3,.name{font-weight:600}
         </div>
         <div class="progress-bar-wrap">
           <div class="progress-bar-fill"
-               :style="{width: cardProgress(c.key)+'%', background: c.color}"></div>
+               :style="{width: cardProgress(c.key)+'%', background: 'linear-gradient(90deg,'+c.color+','+c.colorLight+')'}"></div>
         </div>
         <div class="task-list">
           <div v-if="cardTasks(c.key).length===0" class="empty-msg">暂无任务</div>
@@ -795,7 +908,7 @@ h1,h2,h3,.name{font-weight:600}
               {{ formatDeadline(t.deadline) }}
             </span>
             <span class="priority-tag"
-                  :class="'priority-'+t.priority">{{ priorityLabel(t.priority) }}</span>
+                  :class="'priority-'+t.priority"></span>
             <button class="task-del" @click="deleteTask(t)" title="删除">×</button>
           </div>
         </div>
@@ -807,7 +920,7 @@ h1,h2,h3,.name{font-weight:600}
       <!-- 物品过期提醒 -->
       <div class="expiry-card" v-if="expiryAlerts.length">
         <div class="card-header">
-          <div class="avatar" style="font-size:16px">期</div>
+          <div class="avatar" style="font-size:18px">期</div>
           <span class="name">物品过期提醒</span>
           <button class="view-all-btn" @click="showItemsPage=true">查看全部</button>
         </div>
@@ -828,7 +941,7 @@ h1,h2,h3,.name{font-weight:600}
       <!-- 无提醒时的占位 -->
       <div class="expiry-card" v-else>
         <div class="card-header">
-          <div class="avatar" style="font-size:16px">期</div>
+          <div class="avatar" style="font-size:18px">期</div>
           <span class="name">物品过期提醒</span>
           <button class="view-all-btn" @click="showItemsPage=true">查看全部</button>
         </div>
@@ -837,7 +950,7 @@ h1,h2,h3,.name{font-weight:600}
       <!-- 管家建议 -->
       <div class="ai-card">
         <div class="ai-card-header">
-          <div class="avatar" style="font-size:16px">荐</div>
+          <div class="avatar" style="font-size:18px">荐</div>
           <span class="name">管家建议</span>
         </div>
         <div class="ai-card-body">
@@ -913,7 +1026,7 @@ h1,h2,h3,.name{font-weight:600}
             <div class="member-chips">
               <span class="member-chip" v-for="e in familyElders" :key="e.key"
                     :class="{selected: form.members.includes(e.key)}"
-                    :style="form.members.includes(e.key) ? {background:'#E6A23C',borderColor:'#E6A23C'} : {}"
+                    :style="form.members.includes(e.key) ? {background:'#8B7FE8',borderColor:'#8B7FE8'} : {}"
                     @click="toggleElderChip(e.key)">
                 {{ e.emoji }} {{ e.name }}
               </span>
@@ -931,11 +1044,11 @@ h1,h2,h3,.name{font-weight:600}
           <label>优先级</label>
           <div class="priority-options">
             <div class="priority-opt" :class="{'sel-high':form.priority==='high'}"
-                 @click="form.priority='high'">🔴 高</div>
+                 @click="form.priority='high'">高</div>
             <div class="priority-opt" :class="{'sel-mid':form.priority==='mid'}"
-                 @click="form.priority='mid'">🟡 中</div>
+                 @click="form.priority='mid'">中</div>
             <div class="priority-opt" :class="{'sel-low':form.priority==='low'}"
-                 @click="form.priority='low'">🟢 低</div>
+                 @click="form.priority='low'">低</div>
           </div>
         </div>
         <!-- 截止日期 -->
@@ -980,7 +1093,7 @@ h1,h2,h3,.name{font-weight:600}
           <span v-if="viewingCard.key==='family'" class="elder-tag">{{ personName(t.member[0]) }}</span>
           <span v-if="getTaskType(t.deadline)==='later'" class="future-tag">以后</span>
           <span v-if="t.deadline" class="task-deadline" :class="{overdue:isOverdue(t)}">{{ formatDeadline(t.deadline) }}</span>
-          <span class="priority-tag" :class="'priority-'+t.priority">{{ priorityLabel(t.priority) }}</span>
+          <span class="priority-tag" :class="'priority-'+t.priority"></span>
           <button class="task-del" @click="deleteTask(t)" title="删除">×</button>
         </div>
       </div>
@@ -998,7 +1111,7 @@ h1,h2,h3,.name{font-weight:600}
           <button class="task-del" @click="deleteTask(t)" title="删除">×</button>
         </div>
       </div>
-      <div v-if="!allCardTasks(viewingCard.key).undone.length && !allCardTasks(viewingCard.key).done.length" class="empty-msg" style="padding:40px 0">暂无任务</div>
+      <div v-if="!allCardTasks(viewingCard.key).undone.length && !allCardTasks(viewingCard.key).done.length" class="empty-msg" style="padding:40px 0;color:rgba(255,255,255,0.6)">暂无任务</div>
     </div>
   </div>
 
@@ -1028,7 +1141,7 @@ h1,h2,h3,.name{font-weight:600}
           </div>
         </div>
       </div>
-      <div v-if="!items.length" class="empty-msg" style="padding:40px 0">还没有录入物品，点击右上角 + 添加</div>
+      <div v-if="!items.length" class="empty-msg" style="padding:40px 0;color:rgba(255,255,255,0.6)">还没有录入物品，点击右上角 + 添加</div>
     </div>
   </div>
 
@@ -1110,7 +1223,7 @@ h1,h2,h3,.name{font-weight:600}
         <button class="btn-cancel" @click="showItemModal=false">取消</button>
         <button class="btn-confirm" @click="saveItem"
                 :disabled="!itemForm.name||!itemFinalExpiry"
-                style="background:linear-gradient(135deg,#98C878,#B8D898)">
+                style="background:linear-gradient(135deg,#6BCB77,#8BE89C)">
           {{ editingItemId ? '保存修改' : '确认添加' }}
         </button>
       </div>
@@ -1138,23 +1251,21 @@ const ALL_KEYS = Object.keys(ALL_PEOPLE);
 const ELDER_KEYS = ['gpa','gma','yeye','nainai'];
 
 // Cards displayed in the grid
-// Left column
-const MULTI_CARD = { key:'multi', name:'多人', emoji:'👥', color:'#C8B8E8', gradient:'linear-gradient(135deg,#C8B8E8,#E0D8F0)' };
+const MULTI_CARD = { key:'multi', name:'多人', emoji:'👥', color:'#7c3aed', colorLight:'#a78bfa', gradient:'linear-gradient(135deg,#a78bfa,#7c3aed)' };
 
-// Right column (top to bottom)
 const SOLO_CARDS = [
-  { key:'dad',    name:'强哥', emoji:'👨', color:'#F4B9A8', gradient:'linear-gradient(135deg,#F4B9A8,#F8D5C4)', delay:'0s' },
-  { key:'mom',    name:'桃子', emoji:'🍑', color:'#F8C8D8', gradient:'linear-gradient(135deg,#F8C8D8,#FCE0E8)', delay:'0.06s' },
-  { key:'baby',   name:'小宝', emoji:'👶🏻', color:'#A8D8C8', gradient:'linear-gradient(135deg,#A8D8C8,#C8E8D8)', delay:'0.12s' },
-  { key:'family', name:'家人', emoji:'🏡', color:'#E8D8A8', gradient:'linear-gradient(135deg,#E8D8A8,#F4ECC8)', delay:'0.18s' },
+  { key:'dad',    name:'强哥', emoji:'👨', color:'#ef4444', colorLight:'#fb923c', gradient:'linear-gradient(135deg,#fb923c,#ef4444)', delay:'0s' },
+  { key:'mom',    name:'桃子', emoji:'🍑', color:'#ec4899', colorLight:'#f472b6', gradient:'linear-gradient(135deg,#f472b6,#ec4899)', delay:'0.06s' },
+  { key:'baby',   name:'小宝', emoji:'👶🏻', color:'#059669', colorLight:'#34d399', gradient:'linear-gradient(135deg,#34d399,#059669)', delay:'0.12s' },
+  { key:'family', name:'家人', emoji:'🏡', color:'#7c3aed', colorLight:'#a78bfa', gradient:'linear-gradient(135deg,#a78bfa,#7c3aed)', delay:'0.18s' },
 ];
 
 // Form top-level chips
 const MAIN_CHIPS = [
-  { key:'dad',    name:'强哥', emoji:'👨', color:'#F4B9A8', type:'person' },
-  { key:'mom',    name:'桃子', emoji:'🍑', color:'#F8C8D8', type:'person' },
-  { key:'baby',   name:'小宝', emoji:'👶🏻', color:'#A8D8C8', type:'person' },
-  { key:'family', name:'家人', emoji:'🏡', color:'#E8D8A8', type:'group'  },
+  { key:'dad',    name:'强哥', emoji:'👨', color:'#ef4444', type:'person' },
+  { key:'mom',    name:'桃子', emoji:'🍑', color:'#ec4899', type:'person' },
+  { key:'baby',   name:'小宝', emoji:'👶🏻', color:'#059669', type:'person' },
+  { key:'family', name:'家人', emoji:'🏡', color:'#a78bfa', type:'group'  },
 ];
 
 const FAMILY_ELDERS = [
@@ -1388,7 +1499,6 @@ createApp({
 
     function loadTasks(){
       try{
-        // Try v2 first, then fall back to v1
         let raw = localStorage.getItem(STORAGE_KEY);
         if(!raw) raw = localStorage.getItem('family_butler_tasks');
         if(raw){
@@ -1655,15 +1765,15 @@ createApp({
 
     function expiryDaysLabel(it){
       const d=daysUntilExpiry(it);
-      if(d<0) return '🔴 已过期';
-      if(d<=30) return '🟠 即将过期';
-      if(d<=90) return '🟡 注意';
+      if(d<0) return '已过期';
+      if(d<=30) return '即将过期';
+      if(d<=90) return '注意';
       return '安全';
     }
 
     function expiryColor(it){
       const lvl=expiryLevel(it);
-      return {expired:'#FF7875',urgent:'#FFB347',warning:'#D4B800',safe:'#D4A017'}[lvl];
+      return {expired:'#FF6B9D',urgent:'#FF8C42',warning:'#D4A017',safe:'#6BCB77'}[lvl];
     }
 
     function categoryEmoji(cat){
