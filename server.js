@@ -1,4 +1,5 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
@@ -7,10 +8,10 @@ const { createClient } = require('@supabase/supabase-js');
 const app = express();
 const PORT = 3001;
 
-// ===== 配置 =====
-const SUPABASE_URL = 'https://zgubxubqpkblrkgvomqo.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_mmo05rQjonntpyytYXOMBA_qB5y017l';
-const QWEN_API_KEY = 'sk-7d7a9440783f43b1a409e49ba85389b5';
+// ===== 配置 (从环境变量读取) =====
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
+const QWEN_API_KEY = process.env.QWEN_API_KEY;
 const QWEN_API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
 const QWEN_MODEL  = 'qwen-turbo';
 
@@ -173,7 +174,17 @@ app.post('/api/recognize-item', async (req, res) => {
 3. 过期日期关键词：'有效期至'/'保质期至'/'失效日期'
 4. 日期格式多样，如'2026/01/13'/'20260113'/'2026.01.13'，统一转换为YYYY-MM-DD格式
 5. 如果某字段图片中没有，返回null
-6. 只返回JSON，不要其他文字`,
+6. 只返回JSON，不要其他文字
+7. **物品名称必须转为家人日常会说的叫法**，不要直接复制包装上的完整商品名：
+   - 英文品牌转中文：PROYA→珀莱雅、LANCOME→兰蔻、OLAY→OLAY、SK-II→SK2
+   - 去掉营销修饰词（如"赋能鲜颜淡纹紧致轻盈"这种），只保留核心产品线名称
+   - 用外观特征或昵称描述（如"大红瓶"、"小白瓶"、"红宝石"）
+   - 示例：
+     * "PROYA赋能鲜颜淡纹紧致轻盈霜" → "珀莱雅红宝石面霜"
+     * "OLAY新生塑颜金纯面霜（信号肽）" → "OLAY大红瓶面霜"
+     * "维D2磷葡钙片" → "钙片"
+     * "小安素全营养配方粉" → "小安素奶粉"
+   - 保留关键区分信息（如面霜vs精华、感冒药vs退烧药）`,
     });
 
     const response = await fetch(QWEN_API_URL, {

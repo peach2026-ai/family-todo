@@ -1,8 +1,8 @@
 const { createClient } = require('@supabase/supabase-js');
 
-const SUPABASE_URL = 'https://zgubxubqpkblrkgvomqo.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_mmo05rQjonntpyytYXOMBA_qB5y017l';
-const QWEN_API_KEY = 'sk-7d7a9440783f43b1a409e49ba85389b5';
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
+const QWEN_API_KEY = process.env.QWEN_API_KEY;
 const QWEN_API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);

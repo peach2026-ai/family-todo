@@ -1,4 +1,4 @@
-const QWEN_API_KEY = 'sk-7d7a9440783f43b1a409e49ba85389b5';
+const QWEN_API_KEY = process.env.QWEN_API_KEY;
 const QWEN_API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
 
 module.exports = async function handler(req, res) {
