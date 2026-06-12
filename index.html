@@ -169,8 +169,8 @@ h1,h2,h3,.name{font-weight:600}
 }
 .task-check:hover{border-color:#FFB347}
 .task-check.checked{
-  background:#7DC88A;
-  border-color:#7DC88A;
+  background:#FFB347;
+  border-color:#FFB347;
 }
 .task-check.checked::after{
   content:'✓';color:#fff;font-size:13px;font-weight:700;
@@ -198,7 +198,7 @@ h1,h2,h3,.name{font-weight:600}
 }
 .priority-high{background:#FFE8E8;color:#FF7875}
 .priority-mid{background:#FFF3E0;color:#FFB347}
-.priority-low{background:#F0FFF4;color:#7DC88A}
+.priority-low{background:#FFF8E6;color:#D4A017}
 
 /* Delete */
 .task-del{
@@ -362,7 +362,7 @@ h1,h2,h3,.name{font-weight:600}
 .priority-opt:hover{border-color:#FFB347}
 .priority-opt.sel-high{border-color:#FF7875;background:#FFE8E8;color:#FF7875}
 .priority-opt.sel-mid{border-color:#FFB347;background:#FFF3E0;color:#FFB347}
-.priority-opt.sel-low{border-color:#7DC88A;background:#F0FFF4;color:#7DC88A}
+.priority-opt.sel-low{border-color:#D4A017;background:#FFF8E6;color:#D4A017}
 
 .modal-footer{
   display:flex;gap:12px;
@@ -402,8 +402,8 @@ h1,h2,h3,.name{font-weight:600}
   animation:toastIn .35s ease;
   pointer-events:none;
 }
-.toast.success{background:linear-gradient(135deg,#7DC88A,#98D8C8)}
-.toast.error{background:linear-gradient(135deg,#FF7875,#FFB347)}
+.toast.success{background:linear-gradient(135deg,#FFB347,#FFD699)}
+.toast.error{background:linear-gradient(135deg,#FF8C69,#FFB347)}
 @keyframes toastIn{from{opacity:0;transform:translate(-50%,-20px)}to{opacity:1;transform:translate(-50%,0)}}
 
 /* ===== Responsive ===== */
@@ -517,7 +517,7 @@ h1,h2,h3,.name{font-weight:600}
   border-radius:50px;
   font-weight:600;
 }
-.deadline-hint.hint-today{background:#F0FFF4;color:#7DC88A}
+.deadline-hint.hint-today{background:#FFF8E6;color:#D4A017}
 .deadline-hint.hint-week{background:#FFF3E0;color:#FFB347}
 .deadline-hint.hint-later{background:#FFF3EC;color:#FF8C69}
 
@@ -589,7 +589,7 @@ h1,h2,h3,.name{font-weight:600}
 
 /* ===== Expiry Reminder Card ===== */
 .expiry-card{border-radius:20px;overflow:hidden;background:#FFFFFF;box-shadow:0 4px 20px rgba(255,140,105,0.08);animation:fadeInUp .4s ease both}
-.expiry-card .card-header{background:linear-gradient(135deg,#7DC88A,#98D8C8);padding:14px 20px;display:flex;align-items:center;gap:10px;color:#fff}
+.expiry-card .card-header{background:linear-gradient(135deg,#FFB347,#FFD699);padding:14px 20px;display:flex;align-items:center;gap:10px;color:#fff}
 .expiry-card .card-header .name{font-size:16px;font-weight:700}
 .expiry-card .view-all-btn{
   margin-left:auto;font-size:12px;padding:4px 12px;border-radius:50px;
@@ -611,7 +611,7 @@ h1,h2,h3,.name{font-weight:600}
 .expiry-status.expired{background:#FFE8E8;color:#FF7875}
 .expiry-status.urgent{background:#FFF3E0;color:#FFB347}
 .expiry-status.warning{background:#FFFBE6;color:#D4B800}
-.expiry-status.safe{background:#F0FFF4;color:#7DC88A}
+.expiry-status.safe{background:#FFF8E6;color:#D4A017}
 .cat-tag{font-size:10px;padding:2px 8px;border-radius:50px;background:#FFF3EC;color:#FF8C69;font-weight:500;margin-left:4px}
 
 /* ===== Items Fullscreen Overlay ===== */
@@ -620,7 +620,7 @@ h1,h2,h3,.name{font-weight:600}
   display:flex;flex-direction:column;animation:fadeIn .3s ease;overflow:hidden;
 }
 .items-header{
-  padding:16px 24px;background:linear-gradient(135deg,#7DC88A,#98D8C8);
+  padding:16px 24px;background:linear-gradient(135deg,#FFB347,#FFD699);
   display:flex;align-items:center;gap:12px;color:#fff;flex-shrink:0;
 }
 .items-header h2{font-size:20px;font-weight:700;flex:1}
@@ -658,24 +658,24 @@ h1,h2,h3,.name{font-weight:600}
 /* ===== Add Item Modal ===== */
 .item-modal{z-index:260}
 .item-modal .modal-box{max-width:520px}
-.item-modal .modal-header{background:linear-gradient(135deg,#7DC88A,#98D8C8)}
+.item-modal .modal-header{background:linear-gradient(135deg,#FFB347,#FFD699)}
 .item-tabs{display:flex;gap:0;margin-bottom:16px;border-radius:50px;overflow:hidden;border:2px solid #FFE0D0;background:#FFF8F3}
 .item-tab{
   flex:1;padding:10px 0;text-align:center;font-size:13px;font-weight:600;
   cursor:pointer;transition:all .25s;background:transparent;color:#8B7355;
 }
-.item-tab.active{background:#FF8C69;color:#fff}
+.item-tab.active{background:#FFB347;color:#fff}
 .upload-zone{
   border:2px dashed #FFE0D0;border-radius:14px;padding:32px 20px;text-align:center;
   cursor:pointer;transition:all .3s;background:#FFF8F3;position:relative;
 }
 .upload-zone:hover{border-color:#FF8C69;background:#FFF3EC}
-.upload-zone.has-image{border-style:solid;border-color:#7DC88A}
+.upload-zone.has-image{border-style:solid;border-color:#FFB347}
 .upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
 .upload-zone .placeholder{color:#8B7355;font-size:14px}
 .upload-zone .placeholder span{font-size:32px;display:block;margin-bottom:8px}
 .upload-preview{max-width:100%;max-height:200px;border-radius:12px;margin-top:8px}
-.ai-recognizing{color:#7DC88A;font-size:13px;font-weight:600;padding:8px 0;text-align:center}
+.ai-recognizing{color:#FFB347;font-size:13px;font-weight:600;padding:8px 0;text-align:center}
 .images-strip{display:flex;gap:8px;overflow-x:auto;padding:8px 0;margin-top:8px}
 .images-strip::-webkit-scrollbar{height:4px}
 .img-thumb-wrap{position:relative;flex-shrink:0}
@@ -686,7 +686,7 @@ h1,h2,h3,.name{font-weight:600}
   display:flex;align-items:center;justify-content:center;line-height:1;
 }
 .recognize-status{padding:10px 14px;border-radius:12px;font-size:13px;font-weight:500;margin-bottom:12px}
-.recognize-status.success{background:#F0FFF4;color:#7DC88A;border:1px solid #98D8C8}
+.recognize-status.success{background:#FFF8E6;color:#D4A017;border:1px solid #FFD699}
 .recognize-status.error{background:#FFE8E8;color:#FF7875;border:1px solid #FFB3B3}
 .recognize-status.loading{background:#FFF3EC;color:#FF8C69;border:1px solid #FFB347}
 .field-unrecognized{border-color:#FFB347 !important}
@@ -696,7 +696,7 @@ h1,h2,h3,.name{font-weight:600}
   flex:1;padding:10px;border-radius:50px;border:2px solid #FFE0D0;text-align:center;
   font-size:12px;font-weight:600;cursor:pointer;transition:all .25s;background:#FFF8F3;
 }
-.date-mode-btn.active{border-color:#7DC88A;background:#F0FFF4;color:#7DC88A}
+.date-mode-btn.active{border-color:#FFB347;background:#FFF8E6;color:#D4A017}
 </style>
 </head>
 <body>
@@ -704,12 +704,12 @@ h1,h2,h3,.name{font-weight:600}
 <div id="app">
   <!-- Top Nav -->
   <header class="top-nav">
-    <h1>🏠 家庭贴心管家</h1>
+    <h1>家庭贴心管家</h1>
     <div class="nav-stats">
       <span class="stat">全部<strong>{{ tasks.length }}</strong></span>
       <span class="stat">今日<strong>{{ todayTasks.length }}</strong></span>
       <span class="stat">完成率<strong>{{ donePercent }}%</strong></span>
-      <span class="date">📅 {{ todayStr }}</span>
+      <span class="date">{{ todayStr }}</span>
     </div>
   </header>
 
@@ -719,18 +719,18 @@ h1,h2,h3,.name{font-weight:600}
     <div class="col-left">
       <!-- 今日任务 -->
       <div class="member-card today-card">
-        <div class="card-header" style="background:linear-gradient(135deg,#FF6B6B,#FFA07A)">
-          <div class="avatar">📋</div>
+        <div class="card-header" style="background:linear-gradient(135deg,#FF8C69,#FFB347)">
+          <div class="avatar" style="font-size:16px">今</div>
           <span class="name">今日任务</span>
           <span class="progress-text">{{ todayDone }}/{{ todayTasks.length }}</span>
-          <button class="view-btn" @click="openCardView('today','今日任务','linear-gradient(135deg,#FF6B6B,#FFA07A)')">查看</button>
+          <button class="view-btn" @click="openCardView('today','今日任务','linear-gradient(135deg,#FF8C69,#FFB347)')">查看</button>
         </div>
         <div class="progress-bar-wrap">
           <div class="progress-bar-fill"
-               :style="{width: todayProgress+'%', background:'#FF6B6B'}"></div>
+               :style="{width: todayProgress+'%', background:'#FF8C69'}"></div>
         </div>
         <div class="task-list">
-          <div v-if="todayTasks.length===0" class="empty-msg">今日无任务 🎉</div>
+          <div v-if="todayTasks.length===0" class="empty-msg">今天没有任务，好好休息吧</div>
           <div class="task-item" :class="{done:t.done}"
                v-for="t in todayTasks" :key="t.id">
             <div class="task-check" :class="{checked:t.done}" @click="toggleTask(t)"></div>
@@ -738,7 +738,7 @@ h1,h2,h3,.name{font-weight:600}
               <span class="member-avatar-mini" v-for="mk in t.member" :key="mk" :title="personName(mk)">{{ personEmoji(mk) }}</span>
             </span>
             <span class="task-title" @click="openEdit(t)">{{ t.title }}</span>
-            <span v-if="t.done_at" class="done-at">✅{{ formatDoneAt(t.done_at) }}</span>
+            <span v-if="t.done_at" class="done-at">{{ formatDoneAt(t.done_at) }}</span>
             <span class="priority-tag"
                   :class="'priority-'+t.priority">{{ priorityLabel(t.priority) }}</span>
             <button class="task-del" @click="deleteTask(t)" title="删除">×</button>
@@ -758,7 +758,7 @@ h1,h2,h3,.name{font-weight:600}
                :style="{width: cardProgress('multi')+'%', background: multiCard.color}"></div>
         </div>
         <div class="task-list">
-          <div v-if="cardTasks('multi').length===0" class="empty-msg">暂无多人任务 ✨</div>
+          <div v-if="cardTasks('multi').length===0" class="empty-msg">暂无多人任务</div>
           <div class="task-item" :class="{done:t.done}"
                v-for="t in cardTasks('multi')" :key="t.id">
             <div class="task-check" :class="{checked:t.done}" @click="toggleTask(t)"></div>
@@ -767,7 +767,7 @@ h1,h2,h3,.name{font-weight:600}
               <span class="member-avatar-mini" v-for="mk in t.member" :key="mk" :title="personName(mk)">{{ personEmoji(mk) }}</span>
             </span>
             <span v-if="getTaskType(t.deadline)==='later'" class="future-tag">以后</span>
-            <span v-if="t.done_at" class="done-at">✅{{ formatDoneAt(t.done_at) }}</span>
+            <span v-if="t.done_at" class="done-at">{{ formatDoneAt(t.done_at) }}</span>
             <span v-if="t.deadline" class="task-deadline" :class="{overdue:isOverdue(t)}">
               {{ formatDeadline(t.deadline) }}
             </span>
@@ -794,14 +794,14 @@ h1,h2,h3,.name{font-weight:600}
                :style="{width: cardProgress(c.key)+'%', background: c.color}"></div>
         </div>
         <div class="task-list">
-          <div v-if="cardTasks(c.key).length===0" class="empty-msg">暂无任务 ✨</div>
+          <div v-if="cardTasks(c.key).length===0" class="empty-msg">暂无任务</div>
           <div class="task-item" :class="{done:t.done}"
                v-for="t in cardTasks(c.key)" :key="t.id">
             <div class="task-check" :class="{checked:t.done}" @click="toggleTask(t)"></div>
             <span class="task-title" @click="openEdit(t)">{{ t.title }}</span>
             <span v-if="c.key==='family'" class="elder-tag">{{ personName(t.member[0]) }}</span>
             <span v-if="getTaskType(t.deadline)==='later'" class="future-tag">以后</span>
-            <span v-if="t.done_at" class="done-at">✅{{ formatDoneAt(t.done_at) }}</span>
+            <span v-if="t.done_at" class="done-at">{{ formatDoneAt(t.done_at) }}</span>
             <span v-if="t.deadline" class="task-deadline" :class="{overdue:isOverdue(t)}">
               {{ formatDeadline(t.deadline) }}
             </span>
@@ -818,7 +818,7 @@ h1,h2,h3,.name{font-weight:600}
       <!-- 物品过期提醒 -->
       <div class="expiry-card" v-if="expiryAlerts.length">
         <div class="card-header">
-          <div class="avatar" style="font-size:22px">⏰</div>
+          <div class="avatar" style="font-size:16px">期</div>
           <span class="name">物品过期提醒</span>
           <button class="view-all-btn" @click="showItemsPage=true">查看全部</button>
         </div>
@@ -839,22 +839,22 @@ h1,h2,h3,.name{font-weight:600}
       <!-- 无提醒时的占位 -->
       <div class="expiry-card" v-else>
         <div class="card-header">
-          <div class="avatar" style="font-size:22px">⏰</div>
+          <div class="avatar" style="font-size:16px">期</div>
           <span class="name">物品过期提醒</span>
           <button class="view-all-btn" @click="showItemsPage=true">查看全部</button>
         </div>
-        <div class="expiry-list"><div class="empty-msg">暂无即将过期物品 ✅</div></div>
+        <div class="expiry-list"><div class="empty-msg">暂无即将过期物品</div></div>
       </div>
       <!-- 管家建议 -->
       <div class="ai-card">
         <div class="ai-card-header">
-          <div class="avatar">💡</div>
+          <div class="avatar" style="font-size:16px">荐</div>
           <span class="name">管家建议</span>
         </div>
         <div class="ai-card-body">
           <div class="ai-text" :class="{loading: aiLoading}">{{ aiText }}</div>
           <button class="refresh-btn" @click="fetchAiSuggestion" :disabled="aiLoading">
-            {{ aiLoading ? '⏳ 生成中…' : '🔄 刷新建议' }}
+            {{ aiLoading ? '生成中…' : '刷新建议' }}
           </button>
         </div>
       </div>
@@ -902,13 +902,13 @@ h1,h2,h3,.name{font-weight:600}
   <!-- Add / Edit Task Modal -->
   <div class="modal-mask" v-if="showModal" @click.self="closeModal">
     <div class="modal-box">
-      <div class="modal-header">{{ editingId ? '📝 编辑任务' : '✏️ 添加新任务' }}</div>
+      <div class="modal-header">{{ editingId ? '编辑任务' : '添加新任务' }}</div>
       <div class="modal-body">
         <!-- 成员选择 -->
         <div class="form-group">
           <label>选择成员</label>
           <div style="margin-bottom:8px">
-            <span class="all-chip" :class="{selected: isAllSelected}" @click="toggleAll">👨‍👩‍👧‍👦 全员</span>
+            <span class="all-chip" :class="{selected: isAllSelected}" @click="toggleAll">全员</span>
           </div>
           <div class="member-chips">
             <span class="member-chip" v-for="c in mainChips" :key="c.key"
@@ -1004,7 +1004,7 @@ h1,h2,h3,.name{font-weight:600}
             <span class="member-avatar-mini" v-for="mk in t.member" :key="mk">{{ personEmoji(mk) }}</span>
           </span>
           <span v-if="viewingCard.key==='family'" class="elder-tag">{{ personName(t.member[0]) }}</span>
-          <span class="done-at" v-if="t.done_at">✅{{ formatDoneAt(t.done_at) }}</span>
+          <span class="done-at" v-if="t.done_at">{{ formatDoneAt(t.done_at) }}</span>
           <span v-if="t.deadline" class="task-deadline">{{ formatDeadline(t.deadline) }}</span>
           <button class="task-del" @click="deleteTask(t)" title="删除">×</button>
         </div>
@@ -1016,7 +1016,7 @@ h1,h2,h3,.name{font-weight:600}
   <!-- Items Fullscreen Page -->
   <div class="items-overlay" v-if="showItemsPage">
     <div class="items-header">
-      <h2>📦 物品有效期管理</h2>
+      <h2>物品有效期管理</h2>
       <button @click="openAddItem" title="添加物品">+</button>
       <button @click="showItemsPage=false" title="关闭">✕</button>
     </div>
@@ -1046,19 +1046,19 @@ h1,h2,h3,.name{font-weight:600}
   <!-- Add/Edit Item Modal -->
   <div class="modal-mask item-modal" v-if="showItemModal" @click.self="showItemModal=false">
     <div class="modal-box">
-      <div class="modal-header">{{ editingItemId ? '📝 编辑物品' : '📦 添加物品' }}</div>
+      <div class="modal-header">{{ editingItemId ? '编辑物品' : '添加物品' }}</div>
       <div class="modal-body">
         <!-- Tabs -->
         <div class="item-tabs" v-if="!editingItemId">
-          <div class="item-tab" :class="{active:itemTab==='camera'}" @click="itemTab='camera'">📷 拍照识别</div>
-          <div class="item-tab" :class="{active:itemTab==='manual'}" @click="itemTab='manual'">✏️ 手动录入</div>
+          <div class="item-tab" :class="{active:itemTab==='camera'}" @click="itemTab='camera'">拍照识别</div>
+          <div class="item-tab" :class="{active:itemTab==='manual'}" @click="itemTab='manual'">手动录入</div>
         </div>
         <!-- Camera upload (multi-image) -->
         <div v-if="itemTab==='camera' && !editingItemId" style="margin-bottom:16px">
           <div class="upload-zone" :class="{'has-image':itemForm.images.length}">
             <input type="file" accept="image/*" multiple @change="handleItemImages">
             <div class="placeholder" v-if="!itemForm.images.length">
-              <span>📷</span>
+              <span>+</span>
               可上传多张图片，如物品正面、日期面等（最多5张）
             </div>
           </div>
@@ -1069,7 +1069,7 @@ h1,h2,h3,.name{font-weight:600}
             </div>
           </div>
           <div class="recognize-status loading" v-if="itemRecognizing">🔍 AI识别中... 正在分析图片</div>
-          <div class="recognize-status success" v-if="recognizeStatus==='success'">✅ AI识别完成，请确认以下信息是否正确</div>
+          <div class="recognize-status success" v-if="recognizeStatus==='success'">AI识别完成，请确认以下信息是否正确</div>
           <div class="recognize-status error" v-if="recognizeError">❌ {{recognizeError}}</div>
         </div>
         <!-- Form fields -->
@@ -1103,7 +1103,7 @@ h1,h2,h3,.name{font-weight:600}
           <label>物品图片（可选，最多5张）</label>
           <div class="upload-zone" :class="{'has-image':itemForm.images.length}" style="padding:16px">
             <input type="file" accept="image/*" multiple @change="handleItemImages">
-            <div class="placeholder" v-if="!itemForm.images.length"><span style="font-size:20px">📷</span> 点击上传</div>
+            <div class="placeholder" v-if="!itemForm.images.length"><span style="font-size:20px">+</span> 点击上传</div>
           </div>
           <div class="images-strip" v-if="itemForm.images.length">
             <div class="img-thumb-wrap" v-for="(img,idx) in itemForm.images" :key="idx">
@@ -1121,7 +1121,7 @@ h1,h2,h3,.name{font-weight:600}
         <button class="btn-cancel" @click="showItemModal=false">取消</button>
         <button class="btn-confirm" @click="saveItem"
                 :disabled="!itemForm.name||!itemFinalExpiry"
-                style="background:linear-gradient(135deg,#52C41A,#95DE64)">
+                style="background:linear-gradient(135deg,#FFB347,#FFD699)">
           {{ editingItemId ? '保存修改' : '确认添加' }}
         </button>
       </div>
@@ -1150,21 +1150,21 @@ const ELDER_KEYS = ['gpa','gma','yeye','nainai'];
 
 // Cards displayed in the grid
 // Left column
-const MULTI_CARD = { key:'multi', name:'多人', emoji:'👥', color:'#9B59B6', gradient:'linear-gradient(135deg,#9B59B6,#C39BD3)' };
+const MULTI_CARD = { key:'multi', name:'多人', emoji:'👥', color:'#FFB347', gradient:'linear-gradient(135deg,#FFB347,#FFD699)' };
 
 // Right column (top to bottom)
 const SOLO_CARDS = [
-  { key:'dad',    name:'强哥', emoji:'👨', color:'#4A90D9', gradient:'linear-gradient(135deg,#4A90D9,#7AB8F5)', delay:'0s' },
-  { key:'mom',    name:'桃子', emoji:'🍑', color:'#E8789A', gradient:'linear-gradient(135deg,#E8789A,#F4A5BB)', delay:'0.06s' },
-  { key:'baby',   name:'小宝', emoji:'👶🏻', color:'#67C23A', gradient:'linear-gradient(135deg,#67C23A,#95D475)', delay:'0.12s' },
+  { key:'dad',    name:'强哥', emoji:'👨', color:'#FF8C69', gradient:'linear-gradient(135deg,#FF8C69,#FFB347)', delay:'0s' },
+  { key:'mom',    name:'桃子', emoji:'🍑', color:'#FFB347', gradient:'linear-gradient(135deg,#FFB347,#FFD699)', delay:'0.06s' },
+  { key:'baby',   name:'小宝', emoji:'👶🏻', color:'#FFD699', gradient:'linear-gradient(135deg,#FFD699,#FFE8B0)', delay:'0.12s' },
   { key:'family', name:'家人', emoji:'🏡', color:'#E6A23C', gradient:'linear-gradient(135deg,#E6A23C,#F0C78A)', delay:'0.18s' },
 ];
 
 // Form top-level chips
 const MAIN_CHIPS = [
-  { key:'dad',    name:'强哥', emoji:'👨', color:'#4A90D9', type:'person' },
-  { key:'mom',    name:'桃子', emoji:'🍑', color:'#E8789A', type:'person' },
-  { key:'baby',   name:'小宝', emoji:'👶🏻', color:'#67C23A', type:'person' },
+  { key:'dad',    name:'强哥', emoji:'👨', color:'#FF8C69', type:'person' },
+  { key:'mom',    name:'桃子', emoji:'🍑', color:'#FFB347', type:'person' },
+  { key:'baby',   name:'小宝', emoji:'👶🏻', color:'#FFD699', type:'person' },
   { key:'family', name:'家人', emoji:'🏡', color:'#E6A23C', type:'group'  },
 ];
 
@@ -1527,7 +1527,7 @@ createApp({
         }
         saveTasks();
         closeModal();
-        showToast('任务已更新 ✅');
+        showToast('任务已更新');
       } else {
         const t={
           id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
@@ -1541,7 +1541,7 @@ createApp({
         tasks.value.push(t);
         saveTasks();
         closeModal();
-        showToast('任务添加成功 ✨');
+        showToast('任务添加成功');
       }
     }
 
@@ -1549,7 +1549,7 @@ createApp({
       t.done = !t.done;
       t.done_at = t.done ? new Date().toISOString() : null;
       saveTasks();
-      if(t.done) showToast(`「${t.title}」已完成 🎉`);
+      if(t.done) showToast(`「${t.title}」已完成`);
     }
 
     function deleteTask(t){
@@ -1564,7 +1564,7 @@ createApp({
     async function fetchAiSuggestion(){
       const allTasks=[...todayTasks.value,...weekTasks.value].filter(t=>!t.done);
       if(!allTasks.length){
-        aiText.value='当前没有未完成的任务 ✅';
+        aiText.value='当前没有未完成的任务';
         return;
       }
       aiLoading.value = true;
@@ -1669,16 +1669,16 @@ createApp({
       if(d<0) return '🔴 已过期';
       if(d<=30) return '🟠 即将过期';
       if(d<=90) return '🟡 注意';
-      return '✅ 安全';
+      return '安全';
     }
 
     function expiryColor(it){
       const lvl=expiryLevel(it);
-      return {expired:'#FF4D4F',urgent:'#FA8C16',warning:'#D4B106',safe:'#52C41A'}[lvl];
+      return {expired:'#FF7875',urgent:'#FFB347',warning:'#D4B800',safe:'#D4A017'}[lvl];
     }
 
     function categoryEmoji(cat){
-      return {'食品':'🍞','药品':'💊','化妆品':'💄','保健品':'💪','日用品':'🧴','其他':'📦'}[cat]||'📦';
+      return {'食品':'食','药品':'药','化妆品':'妆','保健品':'保','日用品':'日','其他':'他'}[cat]||'他';
     }
 
     const expiryAlerts = computed(()=>{
@@ -1787,10 +1787,10 @@ createApp({
       if(editingItemId.value){
         const it=items.value.find(x=>x.id===editingItemId.value);
         if(it) Object.assign(it, data);
-        showToast('物品已更新 ✅');
+        showToast('物品已更新');
       } else {
         items.value.push({...data, id: Date.now().toString(36)+Math.random().toString(36).slice(2,6), created_at:new Date().toISOString()});
-        showToast('物品添加成功 📦');
+        showToast('物品添加成功');
       }
       saveItems();
       showItemModal.value=false;
